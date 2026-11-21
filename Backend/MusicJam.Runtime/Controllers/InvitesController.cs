@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MusicJam.Runtime.Responses;
 using MusicJam.Runtime.Services.InvitesService;
 
 namespace MusicJam.Runtime.Controllers;
@@ -18,12 +19,12 @@ public class InvitesController(IInvitesService invitesService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> JoinGameByCode([FromQuery] string code)
+    public async Task<ActionResult<BackUrlResponse>> JoinGameByCode([FromQuery] string code)
     {
         var result = await invitesService.JoinGameByCode(code);
-        return result.TryGetFault(out var error, out _)
+        return result.TryGetFault(out var error, out var waitingRoomUrl)
             ? ErrorResponse(error)
-            : Ok();
+            : new BackUrlResponse { BackUrl = waitingRoomUrl };
     }
 
     [HttpGet(JoinGameByLinkUrl)]
