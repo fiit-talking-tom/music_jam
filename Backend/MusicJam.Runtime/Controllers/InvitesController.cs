@@ -21,9 +21,9 @@ public class InvitesController(IInvitesService invitesService) : ControllerBase
     public async Task<ActionResult> JoinGameByCode([FromQuery] string code)
     {
         var result = await invitesService.JoinGameByCode(code);
-        return result.TryGetFault(out var error, out var waitingRoomUrl)
+        return result.TryGetFault(out var error, out _)
             ? ErrorResponse(error)
-            : Redirect(waitingRoomUrl);
+            : Ok();
     }
 
     [HttpGet(JoinGameByLinkUrl)]
