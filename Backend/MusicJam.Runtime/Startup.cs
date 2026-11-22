@@ -8,7 +8,7 @@ using MusicJam.Runtime.Hubs;
 using MusicJam.Runtime.Middlewares;
 using MusicJam.Runtime.Services.GameService;
 using MusicJam.Runtime.Services.InvitesService;
-using MusicJam.Runtime.Services.UserService;
+using MusicJam.Runtime.Services.UsersService;
 using MusicJam.Runtime.Services.WaitingRoomService;
 using MusicJam.Runtime.Storages.ConnectionStorage;
 using MusicJam.Runtime.Storages.GameStorage;
@@ -72,7 +72,7 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton<IInvitesStorage, InMemoryInvitesStorage>();
         services.AddScoped<IGameService, GameService>();
         services.Decorate<IGameService, GameServiceLoggerDecorator>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUsersService, UsersService>();
         services.AddScoped<IInvitesService, InvitesService>();
         services.Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
 
