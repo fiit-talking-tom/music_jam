@@ -25,35 +25,21 @@ public sealed partial class GameHub
             Connections = [Context.ConnectionId]
         };
 
-        logger.LogInformation(
-            "Start processing join game. SessionId: {SessionId}, GameId: {GameId}, Role: {Role}, ConnectionId: {ConnectionId}",
-            sessionId,
-            gameId,
-            role,
-            Context.ConnectionId);
-
         var result = await waitingRoomService.Join(binding);
         if (result.TryGetFault(out var error, out var joinResponse))
         {
-            logger.LogWarning(
-                "Join finished with fault. SessionId: {SessionId}, Error: {Error}",
-                sessionId,
-                error);
-
             throw ToHubException(error);
         }
 
         var group = GroupName(gameId);
+
         await Groups.AddToGroupAsync(Context.ConnectionId, group);
         await Clients.Caller.RoomState(joinResponse.Teams);
+
         if (joinResponse.Team is not null)
         {
             await Clients.OthersInGroup(group).TeamJoined(joinResponse.Team);
         }
-
-        logger.LogInformation(
-            "Join finished successfully. SessionId: {SessionId}",
-            sessionId);
 
         return joinResponse;
     }

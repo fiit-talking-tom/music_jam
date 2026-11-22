@@ -33,7 +33,7 @@ public sealed class InMemoryBindingsStorage : IBindingsStorage
             return null;
         }
 
-        _bindings.TryRemove(binding.SessionId, out _);
+        binding.Connections.Remove(connectionId);
 
         return binding;
     }
