@@ -12,6 +12,11 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System.Text.Json.Serialization;
 using MusicJam.Studio.Infrastructure.Data;
+using MusicJam.Studio.Telemetry;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MusicJam.Studio;
 
@@ -63,8 +68,25 @@ public class Startup(IConfiguration configuration)
         services.AddAuthorization();
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention()
-                .EnableSensitiveDataLogging());
+                .UseSnakeCaseNamingConvention());
+        
+        services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService("MusicJam.Studio"))
+            .WithLogging()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddSource(StudioActivitySource.Name)
+                    .AddSource("Npgsql")
+                    .AddHttpClientInstrumentation();
+            })
+            .WithMetrics(metrics => metrics
+                .AddPrometheusExporter()
+                .AddHttpClientInstrumentation()
+                .AddMeter("Npgsql")
+                .AddAspNetCoreInstrumentation())
+            .UseOtlpExporter();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -73,7 +95,8 @@ public class Startup(IConfiguration configuration)
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            .UseEndpoints(endpoints => { endpoints.MapControllers(); })
+            .UseOpenTelemetryPrometheusScrapingEndpoint();
     }
 
     private static TokenValidationParameters GetTokenValidationParameters(JwtSettings jwtSettings) => new()

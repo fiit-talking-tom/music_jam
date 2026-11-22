@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Runtime.Clients.StudioClient;
 using MusicJam.Runtime.Hubs;
@@ -11,8 +12,13 @@ using MusicJam.Runtime.Services.UserService;
 using MusicJam.Runtime.Services.WaitingRoomService;
 using MusicJam.Runtime.Storages.ConnectionStorage;
 using MusicJam.Runtime.Storages.GameStorage;
+using MusicJam.Runtime.Telemetry;
 using MusicJam.Studio.Configurations;
 using MusicJam.Studio.Constants;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MusicJam.Runtime;
 
@@ -57,15 +63,20 @@ public class Startup(IConfiguration configuration)
             .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
         
-        
-        services.AddSignalR()
+        services.AddSingleton<HubTracingFilter>();
+        services.AddSignalR(options =>
+                options.AddFilter<HubTracingFilter>())
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+            
         services.AddSingleton<IGameStorage, GameStorage>();
         services.AddSingleton<IConnectionStorage, InMemoryConnectionStorage>();
-        services.AddSingleton<IWaitingRoomService, WaitingRoomService>();
-        services.AddScoped<IGameService, GameService>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IWaitingRoomService, WaitingRoomService>()
+            .Decorate<IWaitingRoomService, WaitingRoomServiceLoggingDecorator>();
+        services.AddScoped<IGameService, GameService>()
+            .Decorate<IGameService, GameServiceLoggingDecorator>();
+        services.AddScoped<IUserService, UserService>()
+            .Decorate<IUserService, UserServiceLoggingDecorator>();
 
         services.AddHttpContextAccessor();
         services.AddTransient<ForwardAccessTokenHandler>();
@@ -76,6 +87,22 @@ public class Startup(IConfiguration configuration)
                 client.BaseAddress = new Uri(studioUrl);
             })
             .AddHttpMessageHandler<ForwardAccessTokenHandler>();
+        
+        services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService("MusicJam.Runtime"))
+            .WithLogging()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddSource(RuntimeActivitySource.Name)
+                    .AddHttpClientInstrumentation();
+            })
+            .WithMetrics(metrics => metrics
+                .AddPrometheusExporter()
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation())
+            .UseOtlpExporter();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -89,6 +116,7 @@ public class Startup(IConfiguration configuration)
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<GameHub>(GameHub.Path);
-            });
+            })
+            .UseOpenTelemetryPrometheusScrapingEndpoint();
     }
 }

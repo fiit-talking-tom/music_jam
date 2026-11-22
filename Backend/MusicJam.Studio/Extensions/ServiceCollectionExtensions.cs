@@ -23,8 +23,11 @@ public static class ServiceCollectionExtensions
             .Decorate<IAuthService, AuthServiceLoggingDecorator>()
             .AddScoped<ITokenService, JwtTokenService>()
             .AddScoped<IQuestionsService, QuestionsService>()
+            .Decorate<IQuestionsService, QuestionServiceLoggingDecorator>()
             .AddScoped<IPacksService, PacksService>()
-            .AddScoped<ITracksService, TracksService>();
+            .Decorate<IPacksService, PacksServiceLoggingDecorator>()
+            .AddScoped<ITracksService, TracksService>()
+            .Decorate<ITracksService, TracksServiceLoggingDecorator>();
 
         return services;
     }
