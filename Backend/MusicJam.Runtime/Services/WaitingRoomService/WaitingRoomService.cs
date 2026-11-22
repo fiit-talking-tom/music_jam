@@ -37,7 +37,7 @@ public sealed class WaitingRoomService(
 
         var result = role switch
         {
-            Role.Host => JoinAsHost(game, userId),
+            Role.Host => JoinAsHost(game, sessionId, userId),
             Role.Viewer => JoinAsViewer(game, sessionId),
             _ => JoinAsPlayer(game, sessionId, teamName),
         };
@@ -50,11 +50,16 @@ public sealed class WaitingRoomService(
         return result;
     }
 
-    private static Result<JoinResponse, WaitingRoomError> JoinAsHost(Game game, Guid? userId)
+    private static Result<JoinResponse, WaitingRoomError> JoinAsHost(Game game, Guid sessionId, Guid? userId)
     {
         if (userId is null || userId != game.HostId)
         {
             return WaitingRoomError.NotHost;
+        }
+
+        lock (game.Lock)
+        {
+            game.HostSessionId = sessionId;
         }
 
         return new JoinResponse
@@ -72,7 +77,7 @@ public sealed class WaitingRoomService(
             game.Viewers.Add(sessionId);
             return new JoinResponse
             {
-                Role =  Role.Viewer,
+                Role = Role.Viewer,
                 TeamId = null,
                 TeamName = null
             };

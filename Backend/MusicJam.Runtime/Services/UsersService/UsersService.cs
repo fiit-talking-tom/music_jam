@@ -15,15 +15,23 @@ public class UsersService(IGameStorage gameStorage) : IUsersService
             return IUsersService.UserError.GameNotFound;
         }
 
+        if (game.HostSessionId == sessionId)
+        {
+            return new CheckRoleResponse { Role = Role.Host };
+        }
+
         if (game.FindViewerBySession(sessionId))
         {
-            return new CheckRoleResponse { Role = Role.Viewer, TeamId = null, TeamName = null };
+            return new CheckRoleResponse { Role = Role.Viewer };
         }
 
         var team = game.FindTeamBySession(sessionId);
-        return team is not null
-            ? new CheckRoleResponse { Role = Role.Player, TeamId = team.TeamId, TeamName = team.TeamName }
-            : Result<CheckRoleResponse?, IUsersService.UserError>.Success(null);
+        if (team is not null)
+        {
+            return new CheckRoleResponse { Role = Role.Player, TeamId = team.TeamId, TeamName = team.TeamName };
+        }
+
+        return Result<CheckRoleResponse?, IUsersService.UserError>.Success(null);
     }
 
     public async Task<Result<bool, IUsersService.UserError>> IsHost(Guid gameId, Guid? userId)
