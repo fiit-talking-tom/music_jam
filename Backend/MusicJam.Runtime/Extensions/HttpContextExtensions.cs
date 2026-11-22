@@ -1,4 +1,5 @@
 ﻿using MusicJam.Runtime.Constants;
+using MusicJam.Runtime.Models;
 
 namespace MusicJam.Runtime.Extensions;
 
@@ -14,4 +15,6 @@ public static class HttpContextExtensions
 
         throw new InvalidOperationException("Отсутствует game.sid");
     }
+
+    public static Binding? GetBinding(this HttpContext context) => context.Features.Get<Binding>();
 }

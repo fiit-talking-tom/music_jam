@@ -39,19 +39,16 @@ public class GamesController(IGameService gameService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GetGameResponse>> GetGame([FromRoute] Guid gameId)
     {
-        var sessionId = HttpContext.GetSessionId();
-        
+        var binding = HttpContext.GetBinding();
+        if (binding is null || binding.GameId != gameId)
+        {
+            return ErrorResponse(IGameService.GameError.GameNotFound);
+        }
+
         var result = await gameService.Get(gameId);
         if (result.TryGetFault(out var error, out var game))
         {
             return ErrorResponse(error);
-        }
-        
-        // не можем этот блок вытащить в сервис, потому что метод там используется еще и для подключения к игре
-        var hostId = User.GetUserId();
-        if (hostId != game.HostId)
-        {
-            return ErrorResponse(IGameService.GameError.GameNotFound);
         }
 
         var response = new GetGameResponse
