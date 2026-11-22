@@ -1,8 +1,10 @@
-﻿namespace MusicJam.Runtime.Responses;
+﻿namespace MusicJam.Runtime.Responses.Games;
 
-public class CreateGameResponse
+public class GetGameResponse
 {
     public Guid GameId { get; set; }
+
     public string InviteCode { get; set; }
+
     public string InviteLink { get; set; }
 }
