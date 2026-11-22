@@ -48,7 +48,7 @@ internal class InvitesService(
             return IInvitesService.InviteError.InviteNotFound;
         }
 
-        return BuildWaitingRoomUrl(invite.GameId);
+        return BuildRelativeWaitingRoomUrl(invite.GameId);
     }
 
     public async Task<Result<string, IInvitesService.InviteError>> JoinGameByLink(Guid inviteId)
@@ -64,7 +64,7 @@ internal class InvitesService(
             return IInvitesService.InviteError.InviteNotFound;
         }
 
-        return BuildWaitingRoomUrl(invite.GameId);
+        return BuildAbsoluteWaitingRoomUrl(invite.GameId);
     }
 
     private static bool IsValidCode(string code)
@@ -77,13 +77,9 @@ internal class InvitesService(
         return RandomNumberGenerator.GetString(CodeAlphabet, CodeLength);
     }
 
-    private string BuildWaitingRoomUrl(Guid gameId)
-    {
-        return $"{BaseUrl}/games/{gameId}/waiting-room";
-    }
+    private string BuildAbsoluteWaitingRoomUrl(Guid gameId) => $"{BaseUrl}{BuildRelativeWaitingRoomUrl(gameId)}";
 
-    private string BuildInviteLink(Guid inviteId)
-    {
-        return $"{BaseUrl}/api/invites/join-game/by-link?inviteId={inviteId}";
-    }
+    private static string BuildRelativeWaitingRoomUrl(Guid gameId) => $"/games/{gameId}/waiting-room";
+
+    private string BuildInviteLink(Guid inviteId) => $"{BaseUrl}/api/invites/join-game/by-link?inviteId={inviteId}";
 }
