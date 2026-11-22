@@ -3,7 +3,6 @@ import Header from "@/widgets/Header/ui/Header.tsx";
 import Footer from "@/widgets/Footer/Footer.tsx";
 import Layout from "@/shared/ui/Layout/Layout.tsx";
 import HeroSection from "@/widgets/HeroSection/HeroSection.tsx";
-import CreateGameSection from "@/widgets/CreateGameSection/CreateGameSection.tsx";
 
 const StartPage = () => {
   return (
@@ -12,7 +11,7 @@ const StartPage = () => {
       <main className={styles.homePage}>
         <div className={styles.pageContainer}>
           <HeroSection />
-          <CreateGameSection />
+          {/*<CreateGameSection />*/}
         </div>
       </main>
       <Footer />

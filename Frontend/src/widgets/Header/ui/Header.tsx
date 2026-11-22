@@ -33,7 +33,7 @@ const Header = () => {
   const registerBtnSettings = {
     text: 'Зарегистрироваться',
     id: 'register-btn',
-    variant: 'secondary',
+    variant: 'outline',
     onClick: () => navigate('/register'),
   } as const;
 

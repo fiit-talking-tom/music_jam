@@ -84,3 +84,8 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.gameNotFound {
+    margin: 0;
+    color: red;
+}

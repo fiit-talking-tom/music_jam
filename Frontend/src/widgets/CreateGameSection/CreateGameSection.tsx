@@ -1,7 +1,7 @@
 import styles from "./CreateGameSection.module.css"
 
 const steps = [
-  "Зарегестрируйся",
+  "Зарегистрируйся",
   "Создай пак",
   "Начни игру и пригласи другей",
 ];

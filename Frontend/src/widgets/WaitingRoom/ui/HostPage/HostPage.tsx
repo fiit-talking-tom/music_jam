@@ -12,6 +12,7 @@ import Header from "@/widgets/Header/ui/Header.tsx";
 const HostPage = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { teams } = useRoomTeams();
+
   useJoinRoom(gameId!, 'host', null);
 
   return (

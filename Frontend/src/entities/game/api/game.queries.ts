@@ -24,3 +24,12 @@ export const useGameByCode = (code : string) => {
     enabled: !!code,
   })
 }
+
+export const useInviteInfoGame = (gameId: string) => {
+  return useQuery({
+    queryKey: ['inviteInfoGame', gameId],
+    queryFn: () => gameApi.getInviteInfo(gameId),
+    enabled: !!gameId,
+  })
+}
+
