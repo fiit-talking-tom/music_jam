@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace MusicJam.Studio.Extensions;
+namespace Shared.Auth;
 
 public static class ClaimsPrincipalExtensions
 {

@@ -4,7 +4,7 @@ using MusicJam.Runtime.Requests;
 using MusicJam.Runtime.Responses.Games;
 using MusicJam.Runtime.Services.GameService;
 using MusicJam.Studio.Constants;
-using MusicJam.Studio.Extensions;
+using Shared.Auth;
 
 namespace MusicJam.Runtime.Controllers;
 

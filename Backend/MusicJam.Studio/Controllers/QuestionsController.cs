@@ -7,6 +7,7 @@ using MusicJam.Studio.Models.Tracks;
 using MusicJam.Studio.Requests.Questions;
 using MusicJam.Studio.Responses.Questions;
 using MusicJam.Studio.Services.QuestionsService;
+using Shared.Auth;
 
 namespace MusicJam.Studio.Controllers;
 

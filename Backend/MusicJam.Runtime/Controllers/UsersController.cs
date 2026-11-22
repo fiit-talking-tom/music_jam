@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MusicJam.Runtime.Middlewares;
 using MusicJam.Runtime.Services.UsersService;
-using MusicJam.Studio.Extensions;
+using Shared.Auth;
 
 namespace MusicJam.Runtime.Controllers;
 

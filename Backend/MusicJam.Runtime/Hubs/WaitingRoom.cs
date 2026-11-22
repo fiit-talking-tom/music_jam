@@ -3,7 +3,7 @@ using MusicJam.Runtime.Middlewares;
 using MusicJam.Runtime.Models;
 using MusicJam.Runtime.Responses;
 using MusicJam.Runtime.Services.WaitingRoomService;
-using MusicJam.Studio.Extensions;
+using Shared.Auth;
 using WaitingRoomError = MusicJam.Runtime.Services.WaitingRoomService.IWaitingRoomService.WaitingRoomError;
 
 namespace MusicJam.Runtime.Hubs;
