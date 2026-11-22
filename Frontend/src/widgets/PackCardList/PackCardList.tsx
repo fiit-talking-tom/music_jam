@@ -26,7 +26,7 @@ const PackCardList = () => {
   const items = data ?? []
 
   return (
-    <div>
+    <div className={styles.wrapper}>
       <ul className={styles.packList}>
         {items.map((pack) => (
           <PackCard

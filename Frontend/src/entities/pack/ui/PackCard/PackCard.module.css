@@ -1,62 +1,118 @@
 .packCard {
-    cursor: pointer;
-    position: relative;
+    --accent: #32c76a;
+    --line: #f8f8f8;
 
-    width: 200px;
-    height: 200px;
-
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1.25rem;
     display: flex;
-    align-items: center;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 16px;
-
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 1.8125rem;
+    border-radius: 1.875rem;
+    outline: 0.0625rem solid var(--line);
+    outline-offset: -0.0625rem;
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
 }
 
-.deleteIcon {
-    width: 100%;
+.header {
+    align-self: stretch;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.iconSlot {
+    width: 1.875rem;
+    height: 1.875rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .name {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    width: calc(100% - 24px);
+    flex: 1 1 0;
+    min-width: 0;
     margin: 0;
     text-align: center;
+    color: var(--line);
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 700;
     overflow-wrap: anywhere;
 }
 
-.dates {
-    position: absolute;
-    top: 60%;
-    /*left: 30%;*/
-    box-sizing: border-box;
+.stats {
+    align-self: stretch;
+    display: flex;
+    gap: 1.8125rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
 
+.stats > span {
+    flex: 1 1 0;
+    text-align: center;
+}
+
+.accent {
+    color: var(--accent);
+    font-weight: inherit;
+}
+
+.dates {
+    align-self: stretch;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    padding: 0.75rem 0 0.9rem;
+    border-radius: 0.625rem;
+    outline: 0.09rem solid var(--line);
+    outline-offset: -0.09rem;
+    font-size: 0.75rem;
+    text-align: center;
 }
 
-.date {
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-
-    color: #888;
-    font-size: 14px;
-    line-height: 1.4;
-    white-space: nowrap;
+.dateBlock:first-child {
+    padding-bottom: 0.7rem;
+    border-bottom: 0.045rem solid var(--line);
 }
 
-.date span {
-    color: #888;
-    font-size: 12px;
+.dateTitle {
+    padding-bottom: 0.7rem;
+    border-bottom: 0.045rem solid var(--line);
+    font-weight: 600;
+}
+
+.dateBlock:not(:first-child) .dateTitle {
+    padding-top: 0.9rem;
+}
+
+.dateValue {
+    display: block;
+    padding-top: 0.7rem;
+    font-weight: 300;
+}
+
+.time {
+    font-weight: 400;
+}
+
+.start {
+    align-self: stretch;
+}
+
+.start > button {
+    width: 100%;
+    min-height: 3.125rem;
+    border: 0.03rem solid #bab9d6;
+    border-radius: 0.625rem;
+    background: rgba(50, 199, 106, 0.6);
+    color: #fff;
+    font-family: inherit;
+    font-size: clamp(1.25rem, 4vw, 1.65rem);
+    font-weight: 400;
+    cursor: pointer;
 }
