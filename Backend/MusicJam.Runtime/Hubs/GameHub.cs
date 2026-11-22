@@ -6,7 +6,8 @@ namespace MusicJam.Runtime.Hubs;
 
 public sealed partial class GameHub(
     IWaitingRoomService waitingRoomService,
-    IGameService gameService) : Hub<IGameClient>
+    IGameService gameService,
+    ILogger<GameHub> logger) : Hub<IGameClient>
 {
     public const string Path = "/api/runtime/hub";
 

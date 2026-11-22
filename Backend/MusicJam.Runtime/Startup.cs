@@ -10,7 +10,7 @@ using MusicJam.Runtime.Services.GameService;
 using MusicJam.Runtime.Services.InvitesService;
 using MusicJam.Runtime.Services.UsersService;
 using MusicJam.Runtime.Services.WaitingRoomService;
-using MusicJam.Runtime.Storages.ConnectionStorage;
+using MusicJam.Runtime.Storages.BindingsStorage;
 using MusicJam.Runtime.Storages.GameStorage;
 using MusicJam.Runtime.Storages.InvitesStorage;
 using MusicJam.Studio.Constants;
@@ -67,7 +67,7 @@ public class Startup(IConfiguration configuration)
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
         services.AddSingleton<IGameStorage, GameStorage>();
-        services.AddSingleton<IConnectionStorage, InMemoryConnectionStorage>();
+        services.AddSingleton<IBindingsStorage, InMemoryBindingsStorage>();
         services.AddSingleton<IWaitingRoomService, WaitingRoomService>();
         services.AddSingleton<IInvitesStorage, InMemoryInvitesStorage>();
         services.AddScoped<IGameService, GameService>();

@@ -4,10 +4,14 @@ namespace MusicJam.Runtime.Extensions;
 
 public static class HttpContextExtensions
 {
-    public static Guid GetSessionId(this HttpContext context) =>
-        context.TryGetSessionId()
-        ?? throw new InvalidOperationException("SessionMiddleware не подключена");
+    public static Guid GetSessionId(this HttpContext context)
+    {
+        context.Items.TryGetValue(SessionCookie.Name, out var cookieValue);
+        if (cookieValue is Guid sessionId)
+        {
+            return sessionId;
+        }
 
-    public static Guid? TryGetSessionId(this HttpContext context) =>
-        context.Items[SessionCookie.Name] is Guid sessionId ? sessionId : null;
+        throw new InvalidOperationException("Отсутствует game.sid");
+    }
 }
