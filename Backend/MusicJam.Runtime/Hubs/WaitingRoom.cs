@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using MusicJam.Runtime.Middlewares;
+using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Models;
 using MusicJam.Runtime.Responses;
 using MusicJam.Runtime.Services.WaitingRoomService;

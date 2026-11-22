@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Requests;
 using MusicJam.Runtime.Responses.Games;
 using MusicJam.Runtime.Services.GameService;
@@ -10,10 +11,10 @@ namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [Route("/api/runtime/games")]
-[Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
 public class GamesController(IGameService gameService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -38,6 +39,8 @@ public class GamesController(IGameService gameService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GetGameResponse>> GetGame([FromRoute] Guid gameId)
     {
+        var sessionId = HttpContext.GetSessionId();
+        
         var result = await gameService.Get(gameId);
         if (result.TryGetFault(out var error, out var game))
         {
