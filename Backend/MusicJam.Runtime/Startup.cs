@@ -91,6 +91,7 @@ public class Startup(IConfiguration configuration)
     {
         app
             .UseMiddleware<SessionMiddleware>()
+            .UseMiddleware<EnrichBindingContextMiddleware>()
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
