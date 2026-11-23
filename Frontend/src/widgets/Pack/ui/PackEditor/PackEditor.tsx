@@ -8,7 +8,6 @@ import TabContent from "@/widgets/Pack/ui/Tabs/TabContent.tsx";
 import styles from "./PackEditor.module.css"
 import { usePack } from "@/entities/pack/api/pack.queries.ts";
 import axios from "axios";
-import { packSchema, useUpsertPack } from "@/features/pack";
 
 const PackEditor = ({ packId } : { packId : string }) => {
   const { data, error } = usePack(packId);
@@ -20,20 +19,7 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
   const draft = usePackDraft(packId, initial);
   const [activeTab, setActiveTab] = useState<Tab>('field');
 
-  const [error, setError] = useState('');
 
-  const upsert = useUpsertPack();
-  console.log(error);
-
-  const onSave = () => {
-    const parsed = packSchema.safeParse(draft.pack);
-    if (!parsed.success) return setError(parsed.error.issues[0].message);
-
-    setError('');
-    upsert.mutate({ id: draft.packId, ...parsed.data });
-  };
-
-  const isNew = !initial;
   return (
     <PackDraftProvider draft={draft}>
       <div className={styles.page}>
@@ -49,19 +35,6 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
           <TabsNav active={activeTab} onChange={setActiveTab} />
         </div>
         <TabContent active={activeTab} />
-        <div className={styles.wrapper}>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={onSave}
-            disabled={upsert.isPending}
-          >
-            <span className={styles.content}>
-              <img src="/SaveIcon.svg" alt={"Save pack"}/>
-              <span className={styles.label}>{isNew ? 'Создать' : 'Сохранить'} пак</span>
-            </span>
-          </button>
-        </div>
       </div>
     </PackDraftProvider>
   );

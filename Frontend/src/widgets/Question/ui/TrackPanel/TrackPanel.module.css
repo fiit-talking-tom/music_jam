@@ -1,0 +1,92 @@
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9375rem;
+    width: 100%;
+    max-width: 25.6875rem;
+    min-height: 12rem;
+    max-height: 29rem;
+    border-radius: 0.625rem;
+    margin-inline: auto;
+    transition: background 0.2s;
+}
+.over { background: rgba(50, 199, 106, 0.08); }
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9375rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #bab9d6 transparent;
+}
+
+.item {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 1.2vw, 1.25rem);
+    height: 3.5rem;
+    padding-inline: 1.125rem;
+    border: 1px solid #bab9d6;
+    border-radius: 0.625rem;
+    color: #f8f8f8;
+    font: 400 0.9375rem "Montserrat", sans-serif;
+    cursor: grab;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+.item:active { cursor: grabbing; }
+.playing {
+    border-color: rgba(50, 199, 106, 0.8);
+    background: rgba(50, 199, 106, 0.08);
+}
+
+.name {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.iconBtn {
+    flex: 0 0 auto;
+    width: 1.2rem;
+    height: 1.2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+.iconBtn:hover { opacity: 0.75; }
+
+.add {
+    flex: 1 1 auto;
+    min-height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 0.5rem;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
+}
+.addIcon { width: 1.875rem; height: 1.875rem; flex: 0 0 auto; }
+.addText { font-size: 0.875rem; font-weight: 400; text-align: center; }
+
+.panel:not(:has(.list)) .add {
+    flex-direction: column;
+    gap: 1.875rem;
+}
+.panel:not(:has(.list)) .addIcon { width: clamp(3.5rem, 5vw, 5rem); height: clamp(3.5rem, 5vw, 5rem); }
+.panel:not(:has(.list)) .addText { font-size: clamp(1.125rem, 1.7vw, 1.5rem); }

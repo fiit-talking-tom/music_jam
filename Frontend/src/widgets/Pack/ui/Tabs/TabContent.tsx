@@ -1,6 +1,6 @@
-import QuestionCreator from "@/widgets/QuestionCreator/QuestionCreator.tsx";
 import PackField from "@/widgets/Pack/ui/PackField/PackField.tsx";
 import type { Tab } from "@/widgets/Pack/model/types.ts";
+import QuestionCreator from "@/widgets/Question/ui/QuestionCreator/QuestionCreator.tsx";
 
 const TabContent = ({ active } : {active : Tab}) => {
   return (
