@@ -36,9 +36,9 @@ services:
     entrypoint: >
       sh -c "trap exit TERM; while :; do certbot renew; sleep 12h; done"
 
-    grafana:
-      environment:
-        GF_SERVER_ROOT_URL: "https://test.musicjam.fun:3000/"
+  grafana:
+    environment:
+      GF_SERVER_ROOT_URL: "https://test.musicjam.fun:3000/"
 
 volumes:
   certbot_www:
