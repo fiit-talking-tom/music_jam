@@ -1,32 +1,25 @@
 ﻿using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Elastic.Channels;
+using Elastic.Ingest.Elasticsearch;
+using Elastic.Ingest.Elasticsearch.DataStreams;
+using Elastic.Serilog.Sinks;
+using Elastic.Transport;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Runtime.Clients.StudioClient;
 using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Hubs;
 using MusicJam.Runtime.Middlewares;
-using MusicJam.Runtime.Services.GameService;
-using MusicJam.Runtime.Services.InvitesService;
-using MusicJam.Runtime.Services.UsersService;
-using MusicJam.Runtime.Services.WaitingRoomService;
-using MusicJam.Runtime.Storages.BindingsStorage;
-using MusicJam.Runtime.Storages.GameStorage;
-using MusicJam.Runtime.Telemetry;
-using MusicJam.Runtime.Storages.InvitesStorage;
 using MusicJam.Studio.Constants;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
+using Serilog;
 using Shared;
 using Shared.Auth;
 
 namespace MusicJam.Runtime;
 
-public class Startup(IConfiguration configuration)
+public class Startup(
+    IConfiguration configuration,
+    IWebHostEnvironment env)
 {
     private IConfiguration Configuration { get; } = configuration;
 
@@ -36,13 +29,14 @@ public class Startup(IConfiguration configuration)
             .ConfigureSettings(configuration)
             .AddServices()
             .AddStorages()
-            .AddTelemetry()
+            .AddTelemetry(configuration)
             .AddControllerOptions()
             .AddHubOptions();
         
         services.AddOptions<EnvironmentSettings>().BindConfiguration(EnvironmentSettings.SectionName);
         ConfigureAuthentication(services);
         ConfigureClient(services);
+        ConfigureSerilog(services);
         services.AddAuthorization();
 
         services.AddHttpContextAccessor();
@@ -52,6 +46,7 @@ public class Startup(IConfiguration configuration)
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app
+            .UseSerilogRequestLogging()
             .UseMiddleware<SessionMiddleware>()
             .UseMiddleware<EnrichBindingContextMiddleware>()
             .UseRouting()
@@ -106,5 +101,33 @@ public class Startup(IConfiguration configuration)
                     }
                 };
             });
+    }
+    
+    private void ConfigureSerilog(IServiceCollection services)
+    {
+        var elasticUrl = configuration["Elastic:Url"]
+                         ?? throw new InvalidOperationException("Не задан адрес Elasticsearch: Elastic:Url");
+        var elasticUsername = configuration["Elastic:Username"] ?? "elastic";
+        var elasticPassword = configuration["Elastic:Password"] ?? string.Empty;
+
+        services.AddSerilog((_, lc) => lc.Enrich.FromLogContext()
+            .WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
+            {
+                opts.DataStream = new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
+                opts.BootstrapMethod = BootstrapMethod.Failure;
+                opts.ConfigureChannel = channelOpts =>
+                {
+                    channelOpts.BufferOptions = new BufferOptions
+                    {
+                        ExportMaxConcurrency = 10
+                    };
+                };
+            }, transport =>
+            {
+                transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
+            })
+            .Enrich.WithProperty("Environment", env.EnvironmentName)
+            .Enrich.WithProperty("Service", "MusicJam.Runtime")
+            .ReadFrom.Configuration(configuration));
     }
 }

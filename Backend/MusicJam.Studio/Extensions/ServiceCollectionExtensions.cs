@@ -20,6 +20,8 @@ using MusicJam.Studio.Telemetry;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -41,7 +43,6 @@ public static class ServiceCollectionExtensions
             .Decorate<IPacksService, PacksServiceLoggingDecorator>()
             .AddScoped<ITracksService, TracksService>()
             .Decorate<ITracksService, TracksServiceLoggingDecorator>();
-
         return services;
     }
 
@@ -86,18 +87,22 @@ public static class ServiceCollectionExtensions
         return services;
     }
     
-    public static IServiceCollection AddTelemetry(this IServiceCollection services)
+    public static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService("MusicJam.Studio"))
-            .WithLogging()
             .WithTracing(tracing =>
             {
                 tracing
                     .AddAspNetCoreInstrumentation()
                     .AddSource(StudioActivitySource.Name)
                     .AddSource("Npgsql")
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(configuration["Jaeger:Endpoint"]);
+                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    });
             })
             .WithMetrics(metrics => metrics
                 .AddPrometheusExporter()

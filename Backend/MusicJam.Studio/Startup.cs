@@ -1,26 +1,23 @@
-﻿using System.Buffers;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Studio.Constants;
 using MusicJam.Studio.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using System.Text.Json.Serialization;
+using Elastic.Channels;
+using Elastic.Ingest.Elasticsearch;
+using Elastic.Ingest.Elasticsearch.DataStreams;
+using Elastic.Serilog.Sinks;
+using Elastic.Transport;
 using MusicJam.Studio.Infrastructure.Data;
-using MusicJam.Studio.Telemetry;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
+using Serilog;
 using Shared.Auth;
 
 namespace MusicJam.Studio;
 
-public class Startup(IConfiguration configuration)
+public class Startup(
+    IConfiguration configuration,
+    IWebHostEnvironment env)
 {
     public void ConfigureServices(IServiceCollection services)
     {
@@ -29,13 +26,13 @@ public class Startup(IConfiguration configuration)
             .AddObjectStorage()
             .AddServices()
             .AddStorages()
-            .AddTelemetry()
+            .AddTelemetry(configuration)
             .AddControllerOptions();
-
         
         services.AddAuthorization();
         ConfigureAuthentication(services);
         ConfigureDbContext(services);
+        ConfigureSerilog(services);
     }
 
     private void ConfigureDbContext(IServiceCollection services)
@@ -70,10 +67,39 @@ public class Startup(IConfiguration configuration)
                     };
                 });
     }
+    
+    private void ConfigureSerilog(IServiceCollection services)
+    {
+        var elasticUrl = configuration["Elastic:Url"]
+                         ?? throw new InvalidOperationException("Не задан адрес Elasticsearch: Elastic:Url");
+        var elasticUsername = configuration["Elastic:Username"] ?? "elastic";
+        var elasticPassword = configuration["Elastic:Password"] ?? string.Empty;
+
+        services.AddSerilog((_, lc) => lc.Enrich.FromLogContext()
+            .WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
+            {
+                opts.DataStream = new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
+                opts.BootstrapMethod = BootstrapMethod.Failure;
+                opts.ConfigureChannel = channelOpts =>
+                {
+                    channelOpts.BufferOptions = new BufferOptions
+                    {
+                        ExportMaxConcurrency = 10
+                    };
+                };
+            }, transport =>
+            {
+                transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
+            })
+            .Enrich.WithProperty("Environment", env.EnvironmentName)
+            .Enrich.WithProperty("Service", "MusicJam.Studio")
+            .ReadFrom.Configuration(configuration));
+    }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app
+            .UseSerilogRequestLogging()
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()

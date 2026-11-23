@@ -10,6 +10,8 @@ using MusicJam.Runtime.Storages.BindingsStorage;
 using MusicJam.Runtime.Storages.GameStorage;
 using MusicJam.Runtime.Storages.InvitesStorage;
 using MusicJam.Runtime.Telemetry;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -40,18 +42,22 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IInvitesStorage, InMemoryInvitesStorage>();
         return services;
     }
-    
-    public static IServiceCollection AddTelemetry(this IServiceCollection services)
+
+    public static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService("MusicJam.Runtime"))
-            .WithLogging()
             .WithTracing(tracing =>
             {
                 tracing
                     .AddAspNetCoreInstrumentation()
                     .AddSource(RuntimeActivitySource.Name)
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(configuration["Jaeger:Endpoint"]);
+                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    });
             })
             .WithMetrics(metrics => metrics
                 .AddPrometheusExporter()
@@ -59,7 +65,7 @@ public static class ServiceCollectionExtensions
                 .AddAspNetCoreInstrumentation());
         return services;
     }
-    
+
     public static IServiceCollection AddControllerOptions(this IServiceCollection services)
     {
         services.AddControllers()
