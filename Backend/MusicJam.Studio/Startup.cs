@@ -70,30 +70,36 @@ public class Startup(
     
     private void ConfigureSerilog(IServiceCollection services)
     {
-        var elasticUrl = configuration["Elastic:Url"]
-                         ?? throw new InvalidOperationException("Не задан адрес Elasticsearch: Elastic:Url");
+        var elasticUrl = configuration["Elastic:Url"];
         var elasticUsername = configuration["Elastic:Username"] ?? "elastic";
         var elasticPassword = configuration["Elastic:Password"] ?? string.Empty;
 
-        services.AddSerilog((_, lc) => lc.Enrich.FromLogContext()
-            .WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
-            {
-                opts.DataStream = new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
-                opts.BootstrapMethod = BootstrapMethod.Failure;
-                opts.ConfigureChannel = channelOpts =>
-                {
-                    channelOpts.BufferOptions = new BufferOptions
+        services.AddSerilog((_, lc) =>
+        {
+            lc.Enrich.FromLogContext()
+                .Enrich.WithProperty("Environment", env.EnvironmentName)
+                .Enrich.WithProperty("Service", "MusicJam.Runtime")
+                .ReadFrom.Configuration(configuration);
+
+            if (!string.IsNullOrEmpty(elasticUrl))
+                lc.WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
                     {
-                        ExportMaxConcurrency = 10
-                    };
-                };
-            }, transport =>
-            {
-                transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
-            })
-            .Enrich.WithProperty("Environment", env.EnvironmentName)
-            .Enrich.WithProperty("Service", "MusicJam.Studio")
-            .ReadFrom.Configuration(configuration));
+                        opts.DataStream =
+                            new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
+                        opts.BootstrapMethod = BootstrapMethod.Failure;
+                        opts.ConfigureChannel = channelOpts =>
+                        {
+                            channelOpts.BufferOptions = new BufferOptions
+                            {
+                                ExportMaxConcurrency = 10
+                            };
+                        };
+                    },
+                    transport =>
+                    {
+                        transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
+                    });
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
