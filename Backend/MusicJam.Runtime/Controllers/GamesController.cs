@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Requests;
 using MusicJam.Runtime.Responses.Games;
 using MusicJam.Runtime.Services.GameService;
 using MusicJam.Studio.Constants;
-using MusicJam.Studio.Extensions;
+using Shared.Auth;
 
 namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [Route("/api/runtime/games")]
-[Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
 public class GamesController(IGameService gameService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -38,17 +39,16 @@ public class GamesController(IGameService gameService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<GetGameResponse>> GetGame([FromRoute] Guid gameId)
     {
+        var binding = HttpContext.GetBinding();
+        if (binding is null || binding.GameId != gameId)
+        {
+            return ErrorResponse(IGameService.GameError.GameNotFound);
+        }
+
         var result = await gameService.Get(gameId);
         if (result.TryGetFault(out var error, out var game))
         {
             return ErrorResponse(error);
-        }
-        
-        // не можем этот блок вытащить в сервис, потому что метод там используется еще и для подключения к игре
-        var hostId = User.GetUserId();
-        if (hostId != game.HostId)
-        {
-            return ErrorResponse(IGameService.GameError.GameNotFound);
         }
 
         var response = new GetGameResponse

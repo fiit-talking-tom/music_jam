@@ -13,6 +13,7 @@ public sealed class Game
 {
     public Guid GameId { get; init; }
     public Guid HostId { get; set; }
+    public Guid HostSessionId { get; set; }
     public Pack Pack { get; set; }
     public GameState State { get; set; } = GameState.Pending;
     public GameInvite Invite { get; set; }

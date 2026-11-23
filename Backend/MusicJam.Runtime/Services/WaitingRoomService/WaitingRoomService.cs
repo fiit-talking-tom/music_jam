@@ -1,6 +1,6 @@
 using MusicJam.Runtime.Models;
 using MusicJam.Runtime.Responses;
-using MusicJam.Runtime.Storages.ConnectionStorage;
+using MusicJam.Runtime.Storages.BindingsStorage;
 using MusicJam.Runtime.Storages.GameStorage;
 using Shared;
 using WaitingRoomError = MusicJam.Runtime.Services.WaitingRoomService.IWaitingRoomService.WaitingRoomError;
@@ -9,89 +9,124 @@ namespace MusicJam.Runtime.Services.WaitingRoomService;
 
 public sealed class WaitingRoomService(
     IGameStorage gameStorage,
-    IConnectionStorage connectionStorage) : IWaitingRoomService
+    IBindingsStorage bindingsStorage,
+    ILogger<WaitingRoomService> logger) : IWaitingRoomService
 {
-    public async Task<Result<JoinResponse, WaitingRoomError>> Join(
-        string connectionId,
-        Guid sessionId,
-        Guid? userId,
-        Guid gameId,
-        Role role,
-        string? teamName)
+    public async Task<Result<JoinResponse, WaitingRoomError>> Join(Binding binding)
     {
-        if (role is not (Role.Host or Role.Player or Role.Viewer))
+        logger.LogInformation(
+            "Start processing join game. SessionId: {SessionId}, GameId: {GameId}, Role: {Role}, ConnectionId: {ConnectionId}",
+            binding.SessionId,
+            binding.GameId,
+            binding.Role,
+            binding.Connections.First());
+
+        var validateResult = ValidateBinding(binding);
+        if (validateResult.TryGetFault(out var validateError))
         {
-            return WaitingRoomError.InvalidRole;
+            return validateError;
         }
 
-        var game = await gameStorage.Get(gameId);
+        var game = await gameStorage.Get(binding.GameId);
         if (game is null)
         {
             return WaitingRoomError.GameNotFound;
         }
 
-        if (await connectionStorage.Get(connectionId) is not null)
+        var existingBinding = await bindingsStorage.GetBinding(binding.SessionId);
+        if (IsAlreadyInRoom(binding, existingBinding))
         {
+            logger.LogWarning(
+                "User already in room. SessionId: {SessionId}, GameId: {GameId}, Role: {Role}",
+                binding.SessionId,
+                binding.GameId,
+                binding.Role);
+
             return WaitingRoomError.AlreadyInRoom;
         }
 
-        var result = role switch
+        binding.Connections =
+        [
+            .. binding.Connections,
+            .. existingBinding?.Connections ?? []
+        ];
+
+        var result = binding.Role switch
         {
-            Role.Host => JoinAsHost(game, userId),
-            Role.Viewer => JoinAsViewer(game, sessionId),
-            _ => JoinAsPlayer(game, sessionId, teamName),
+            Role.Host => JoinAsHost(game, binding),
+            Role.Viewer => JoinAsViewer(game, binding),
+            Role.Player => JoinAsPlayer(game, binding),
         };
 
-        if (result.IsSuccess)
+        if (result.TryGetFault(out var joinError, out var joinResponse))
         {
-            await connectionStorage.Bind(connectionId, new ConnectionBinding(gameId, sessionId, role));
+            return joinError;
         }
 
-        return result;
+        await bindingsStorage.AddOrUpdate(binding);
+
+        lock (game.Lock)
+        {
+            joinResponse.Teams = game.Teams.Values.ToList();
+            logger.LogInformation("Teams count = {Count}", joinResponse.Teams.Count);
+        }
+
+        logger.LogInformation(
+            "Join finished successfully. SessionId: {SessionId}",
+            binding.SessionId);
+
+        return joinResponse;
     }
 
-    private static Result<JoinResponse, WaitingRoomError> JoinAsHost(Game game, Guid? userId)
+    private static Result<JoinResponse, WaitingRoomError> JoinAsHost(Game game, Binding binding)
     {
-        if (userId is null || userId != game.HostId)
+        if (binding.UserId != game.HostId)
         {
             return WaitingRoomError.NotHost;
         }
 
+        lock (game.Lock)
+        {
+            game.HostSessionId = binding.SessionId;
+        }
+
         return new JoinResponse
         {
+            SessionId = binding.SessionId,
             Role = Role.Host,
-            TeamId = null,
-            TeamName = null
         };
     }
 
-    private static Result<JoinResponse, WaitingRoomError> JoinAsViewer(Game game, Guid sessionId)
+    private static Result<JoinResponse, WaitingRoomError> JoinAsViewer(Game game, Binding binding)
     {
         lock (game.Lock)
         {
-            game.Viewers.Add(sessionId);
-            return new JoinResponse
-            {
-                Role =  Role.Viewer,
-                TeamId = null,
-                TeamName = null
-            };
+            game.Viewers.Add(binding.SessionId);
         }
+
+        return new JoinResponse
+        {
+            SessionId = binding.SessionId,
+            Role = Role.Viewer,
+        };
     }
 
-    private static Result<JoinResponse, WaitingRoomError> JoinAsPlayer(Game game, Guid sessionId, string? teamName)
+    private static Result<JoinResponse, WaitingRoomError> JoinAsPlayer(Game game, Binding binding)
     {
         lock (game.Lock)
         {
-            var existing = game.Teams.Values.FirstOrDefault(t => t.SessionId == sessionId);
+            var existing = game.Teams.Values.FirstOrDefault(t => t.SessionId == binding.SessionId);
             if (existing is not null)
             {
                 existing.State = TeamState.Ready;
+
                 return new JoinResponse
                 {
+                    SessionId = binding.SessionId,
                     Role = Role.Player,
-                    TeamId = existing.TeamId,
-                    TeamName = existing.TeamName
+                    Team = existing,
+                    TeamName = existing.TeamName,
+                    TeamId = existing.TeamId
                 };
             }
 
@@ -100,43 +135,38 @@ public sealed class WaitingRoomService(
                 return WaitingRoomError.GameAlreadyStarted;
             }
 
-            var name = teamName?.Trim();
-            if (string.IsNullOrEmpty(name))
-            {
-                return WaitingRoomError.EmptyName;
-            }
+            var name = binding.TeamName?.Trim();
 
-            if (name.Length > IWaitingRoomService.MaxTeamNameLength)
+            var validateResult = ValidateTeamName(name, game);
+            if (validateResult.TryGetFault(out var validateError))
             {
-                return WaitingRoomError.LongName;
-            }
-
-            if (game.Teams.Values.Any(t => string.Equals(t.TeamName, name, StringComparison.OrdinalIgnoreCase)))
-            {
-                return WaitingRoomError.NameTaken;
+                return validateError;
             }
 
             var team = new Team
             {
                 TeamId = Guid.NewGuid(),
-                TeamName = name,
+                TeamName = name!,
                 State = TeamState.Ready,
-                SessionId = sessionId,
+                SessionId = binding.SessionId
             };
+
             game.Teams.Add(team.TeamId, team);
 
             return new JoinResponse
             {
+                SessionId = binding.SessionId,
                 Role = Role.Player,
-                TeamId = team.TeamId,
-                TeamName = team.TeamName
+                Team = team,
+                TeamName = team.TeamName,
+                TeamId = team.TeamId
             };
         }
     }
 
-    public async Task<Result<WaitingRoomError>> Leave(string connectionId, Guid gameId, Guid teamId)
+    public async Task<Result<WaitingRoomError>> Leave(Guid sessionId, Guid gameId, Guid teamId)
     {
-        var binding = await connectionStorage.Get(connectionId);
+        var binding = await bindingsStorage.GetBinding(sessionId);
         if (binding is null || binding.GameId != gameId || binding.Role != Role.Player)
         {
             return WaitingRoomError.NotYourTeam;
@@ -150,30 +180,43 @@ public sealed class WaitingRoomService(
 
         lock (game.Lock)
         {
-            if (!game.Teams.TryGetValue(teamId, out var team) || team.SessionId != binding.ParticipantId)
+            if (!game.Teams.TryGetValue(teamId, out var team) || team.SessionId != sessionId)
             {
                 return WaitingRoomError.NotYourTeam;
             }
 
             game.Teams.Remove(teamId);
+            logger.LogInformation("Teams count = {Count}", game.Teams.Count);
         }
 
-        await connectionStorage.Unbind(connectionId);
+        await bindingsStorage.DeleteBinding(sessionId);
+
         return Result<WaitingRoomError>.Success();
     }
 
     public async Task<DisconnectedTeam?> Disconnect(string connectionId)
     {
-        var binding = await connectionStorage.Unbind(connectionId);
+        logger.LogInformation("Start disconnect. ConnectionId: {ConnectionId}", connectionId);
+
+        var binding = await bindingsStorage.RemoveConnection(connectionId);
         if (binding is null)
         {
+            logger.LogInformation("Binding is null");
             return null;
         }
 
-        if (binding.Role != Role.Player || await connectionStorage.HasAny(binding))
+        if (binding.Connections.Count != 0)
         {
+            logger.LogInformation("Connections count != 0. Count: {Count}", binding.Connections.Count);
             return null;
         }
+
+        await bindingsStorage.DeleteBinding(binding.SessionId);
+
+        logger.LogInformation(
+            "Delete binding. ConnectionId: {ConnectionId}, SessionId: {SessionId}",
+            connectionId,
+            binding.SessionId);
 
         var game = await gameStorage.Get(binding.GameId);
         if (game is null)
@@ -183,14 +226,65 @@ public sealed class WaitingRoomService(
 
         lock (game.Lock)
         {
-            var team = game.Teams.Values.FirstOrDefault(t => t.SessionId == binding.ParticipantId);
+            var team = game.Teams.Values.FirstOrDefault(t => t.SessionId == binding.SessionId);
             if (team is null)
             {
                 return null;
             }
 
             team.State = TeamState.Disconnected;
+
+            logger.LogInformation("Team disconnected. TeamId: {TeamId}", team.TeamId);
+
             return new DisconnectedTeam(game.GameId, team);
         }
+    }
+
+    private static Result<WaitingRoomError> ValidateTeamName(string? name, Game game)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return WaitingRoomError.EmptyName;
+        }
+
+        if (name.Length > IWaitingRoomService.MaxTeamNameLength)
+        {
+            return WaitingRoomError.LongName;
+        }
+
+        if (game.Teams.Values.Any(t => string.Equals(t.TeamName, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return WaitingRoomError.NameTaken;
+        }
+
+        return Result<WaitingRoomError>.Success();
+    }
+
+    // todo дописать прочие проверки на корректность биндинга
+    private static Result<WaitingRoomError> ValidateBinding(Binding binding)
+    {
+        if (!Enum.IsDefined(binding.Role))
+        {
+            return WaitingRoomError.InvalidRole;
+        }
+
+        return Result<WaitingRoomError>.Success();
+    }
+
+    private static bool IsAlreadyInRoom(Binding binding, Binding? existingBinding)
+    {
+        if (existingBinding is null)
+        {
+            return false;
+        }
+
+        // если уже в другой игре или уже с другой ролью - надо лучше обдумать эти сценарии, пока так
+        if (binding.GameId != existingBinding.GameId || binding.Role != existingBinding.Role)
+        {
+            return true;
+        }
+
+        // если почему-то совпали id соединений (хотя, по идее, не должны)
+        return existingBinding.Connections.Contains(binding.Connections.First());
     }
 }

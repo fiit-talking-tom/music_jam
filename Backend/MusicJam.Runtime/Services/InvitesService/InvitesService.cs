@@ -81,5 +81,5 @@ internal class InvitesService(
 
     private static string BuildRelativeWaitingRoomUrl(Guid gameId) => $"/games/{gameId}/waiting-room";
 
-    private string BuildInviteLink(Guid inviteId) => $"{BaseUrl}/api/invites/join-game/by-link?inviteId={inviteId}";
+    private string BuildInviteLink(Guid inviteId) => $"{BaseUrl}/api/runtime/invites/join-game/by-link?inviteId={inviteId}";
 }

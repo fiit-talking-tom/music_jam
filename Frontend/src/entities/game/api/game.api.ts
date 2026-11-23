@@ -12,7 +12,7 @@ export const gameApi = {
     return data;
   },
   getByCode: async (code: string) => {
-    const { data } = await http.get<BackUrlResponse>(`/invites/join-game/by-code?code=${code}`);
+    const { data } = await http.get<BackUrlResponse>(`/runtime/invites/join-game/by-code?code=${code}`);
     return data.backUrl;
   },
   getInviteInfo: async (gameId: string) => {

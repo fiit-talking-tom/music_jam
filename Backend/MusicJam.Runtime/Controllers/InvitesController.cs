@@ -7,7 +7,7 @@ namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [AllowAnonymous]
-[Route("api/invites")]
+[Route("api/runtime/invites")]
 public class InvitesController(IInvitesService invitesService) : ControllerBase
 {
     private const string JoinGameBaseUrl = "join-game";
