@@ -69,7 +69,7 @@ public class Startup(IConfiguration configuration)
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
                 .UseSnakeCaseNamingConvention());
-        
+
         services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService("MusicJam.Studio"))
             .WithLogging()
@@ -85,8 +85,7 @@ public class Startup(IConfiguration configuration)
                 .AddPrometheusExporter()
                 .AddHttpClientInstrumentation()
                 .AddMeter("Npgsql")
-                .AddAspNetCoreInstrumentation())
-            .UseOtlpExporter();
+                .AddAspNetCoreInstrumentation());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -94,7 +94,7 @@ public class Startup(IConfiguration configuration)
                 client.BaseAddress = new Uri(studioUrl);
             })
             .AddHttpMessageHandler<ForwardAccessTokenHandler>();
-        
+
         services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService("MusicJam.Runtime"))
             .WithLogging()
@@ -108,8 +108,7 @@ public class Startup(IConfiguration configuration)
             .WithMetrics(metrics => metrics
                 .AddPrometheusExporter()
                 .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation())
-            .UseOtlpExporter();
+                .AddAspNetCoreInstrumentation());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
