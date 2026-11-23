@@ -7,6 +7,7 @@ using MusicJam.Studio.Requests.Packs;
 using MusicJam.Studio.Responses;
 using MusicJam.Studio.Responses.Packs;
 using MusicJam.Studio.Services.PacksService;
+using Shared.Auth;
 
 namespace MusicJam.Studio.Controllers;
 
