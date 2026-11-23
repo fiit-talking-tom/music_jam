@@ -1,4 +1,6 @@
-﻿using MusicJam.Runtime.Models;
+﻿using System.Diagnostics;
+using MusicJam.Runtime.Models;
+using MusicJam.Runtime.Telemetry;
 using Shared;
 
 namespace MusicJam.Runtime.Services.InvitesService;
@@ -10,6 +12,8 @@ internal class InvitesServiceLoggerDecorator(
 {
     public async Task<GameInvite> CreateInvite(Guid gameId)
     {
+        using var activity = RuntimeActivitySource.Source.StartActivity("InviteService.CreateInvite");
+        activity?.SetTag("game.id", gameId);
         logger.LogInformation(
             "Starting new invite creation. GameId: {GameId}",
             gameId);
@@ -27,6 +31,9 @@ internal class InvitesServiceLoggerDecorator(
 
     public async Task<Result<string, IInvitesService.InviteError>> JoinGameByCode(string code)
     {
+        using var activity = RuntimeActivitySource.Source.StartActivity("InviteService.JoinGameByCode");
+        activity?.SetTag("code", code);
+        
         logger.LogInformation(
             "Attempting to join game with code. Code: {Code}",
             code);
@@ -34,6 +41,7 @@ internal class InvitesServiceLoggerDecorator(
         var result = await invitesService.JoinGameByCode(code);
         if (result.TryGetFault(out var error, out var backUrl))
         {
+            activity?.SetStatus(ActivityStatusCode.Error, error.ToString());
             logger.LogWarning(
                 "Failed to join game with code. Code: {Code}, Error: {Error}",
                 code,
@@ -52,6 +60,9 @@ internal class InvitesServiceLoggerDecorator(
 
     public async Task<Result<string, IInvitesService.InviteError>> JoinGameByLink(Guid inviteId)
     {
+        using var activity = RuntimeActivitySource.Source.StartActivity("InviteService.JoinGameByLink");
+        activity?.SetTag("invite.id", inviteId);
+        
         logger.LogInformation(
             "Attempting to join game with link. InviteId: {InviteId}",
             inviteId);
@@ -59,6 +70,7 @@ internal class InvitesServiceLoggerDecorator(
         var result = await invitesService.JoinGameByLink(inviteId);
         if (result.TryGetFault(out var error, out var backUrl))
         {
+            activity?.SetStatus(ActivityStatusCode.Error, error.ToString());
             logger.LogWarning(
                 "Failed to join game with link. InviteId: {InviteId}, Error: {Error}",
                 inviteId,

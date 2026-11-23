@@ -3,13 +3,13 @@ using MusicJam.Runtime.Responses;
 using MusicJam.Runtime.Telemetry;
 using Shared;
 
-namespace MusicJam.Runtime.Services.UserService;
+namespace MusicJam.Runtime.Services.UsersService;
 
 public class UserServiceLoggingDecorator(
-    IUserService userService,
-    ILogger<UserServiceLoggingDecorator> logger) : IUserService
+    IUsersService userService,
+    ILogger<UserServiceLoggingDecorator> logger) : IUsersService
 {
-    public async Task<Result<CheckRoleResponse?, IUserService.UserError>> GetRole(Guid gameId, Guid sessionId)
+    public async Task<Result<CheckRoleResponse?, IUsersService.UserError>> GetRole(Guid gameId, Guid sessionId)
     {
         using var activity = RuntimeActivitySource.Source.StartActivity("UserService.GetRole");
         activity?.SetTag("game.id", gameId);
@@ -35,7 +35,7 @@ public class UserServiceLoggingDecorator(
         return game;
     }
 
-    public async Task<Result<bool, IUserService.UserError>> IsHost(Guid gameId, Guid? userId)
+    public async Task<Result<bool, IUsersService.UserError>> IsHost(Guid gameId, Guid? userId)
     {
         using var activity = RuntimeActivitySource.Source.StartActivity("UserService.GetRole");
         activity?.SetTag("game.id", gameId);

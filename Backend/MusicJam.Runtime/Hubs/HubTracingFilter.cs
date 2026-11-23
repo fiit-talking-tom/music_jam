@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 using MusicJam.Runtime.Telemetry;
-using MusicJam.Studio.Extensions;
+using Shared.Auth;
 
 namespace MusicJam.Runtime.Hubs;
 

@@ -35,7 +35,7 @@ public class GameServiceLoggingDecorator(
         return game;
     }
 
-    public async Task<ActionResult<Game>> Get(Guid gameId)
+    public async Task<Result<Game, IGameService.GameError>> Get(Guid gameId)
     {
         using var activity = RuntimeActivitySource.Source.StartActivity("GameService.Get");
         activity?.SetTag("game.id", gameId);
@@ -44,16 +44,16 @@ public class GameServiceLoggingDecorator(
             gameId);
         
         var gameResult = await gameService.Get(gameId);
-        if (gameResult.Value is null)
+        if (gameResult.TryGetFault(out var error, out var game))
         {
-            activity?.SetStatus(ActivityStatusCode.Error, "GameNotFound");
+            activity?.SetStatus(ActivityStatusCode.Error, error.ToString());
             logger.LogInformation("Get game with gameId = {gameId} failed: game not found",
                 gameId);
-            return gameResult;
+            return error;
         }
 
         logger.LogInformation("Get game with gameId = {gameId} was successful",
             gameId);
-        return gameResult;
+        return game;
     }
 }

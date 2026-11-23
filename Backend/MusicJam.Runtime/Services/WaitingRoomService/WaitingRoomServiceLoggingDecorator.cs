@@ -8,40 +8,38 @@ public class WaitingRoomServiceLoggingDecorator(
     IWaitingRoomService waitingRoomService,
     ILogger<WaitingRoomServiceLoggingDecorator> logger) : IWaitingRoomService
 {
-    public async Task<Result<JoinResponse, IWaitingRoomService.WaitingRoomError>> Join(string connectionId, Guid sessionId, Guid? userId, Guid gameId, Role role, string? teamName)
+    public async Task<Result<JoinResponse, IWaitingRoomService.WaitingRoomError>> Join(Binding binding)
     {
-        logger.LogInformation("Join game with connection = {connectionId} and person = {sessionId}",
-            gameId,
-            sessionId);
+        logger.LogInformation("Join game with gameId = {connectionId} and role = {role}",
+            binding.GameId,
+            binding.Role);
 
-        var roleRsult = await waitingRoomService.Join(connectionId, sessionId, userId, gameId, role, teamName);
+        var roleRsult = await waitingRoomService.Join(binding);
         if (roleRsult.TryGetFault(out var error, out var game))
         {
-            logger.LogInformation("Join game with connection = {connectionId} and person = {sessionId} failed with statusCode = {StatusCode}",
-                gameId,
-                sessionId,
+            logger.LogInformation("Join game with gameId = {connectionId} and role = {role} failed with statusCode = {StatusCode}",
+                binding.GameId,
+                binding.Role,
                 error);
             return error;
         }
 
-        logger.LogInformation("Join game with connection = {connectionId} and person = {sessionId} was successful",
-            gameId,
-            sessionId);
+        logger.LogInformation("Join game with gameId = {connectionId} and role = {role} was successful",
+            binding.GameId,
+            binding.Role);
         return game;
     }
 
-    public async Task<Result<IWaitingRoomService.WaitingRoomError>> Leave(string connectionId, Guid gameId, Guid teamId)
+    public async Task<Result<IWaitingRoomService.WaitingRoomError>> Leave(Guid sessionId, Guid gameId, Guid teamId)
     {
-        logger.LogInformation("Leave game with connection = {connectionId} and game = {gameId} and person = {teamId}",
-            connectionId,
+        logger.LogInformation("Leave game with game = {gameId} and person = {teamId}",
             gameId,
             teamId);
 
-        var leaveResult = await waitingRoomService.Leave(connectionId, gameId, teamId);
+        var leaveResult = await waitingRoomService.Leave(sessionId, gameId, teamId);
         if (leaveResult.TryGetFault(out var error))
         {
-            logger.LogInformation("Leave game with connection = {connectionId} and game = {gameId} and person = {teamId} failed with statusCode = {StatusCode}",
-                connectionId,
+            logger.LogInformation("Leave game with game = {gameId} and person = {teamId} failed with statusCode = {StatusCode}",
                 gameId,
                 teamId,
                 error);
@@ -49,8 +47,7 @@ public class WaitingRoomServiceLoggingDecorator(
         }
 
         logger.LogInformation(
-            "Leave game with connection = {connectionId} and game = {gameId} and person = {teamId} was successful",
-            connectionId,
+            "Leave game with game = {gameId} and person = {teamId} was successful",
             gameId,
             teamId);
         return leaveResult;
