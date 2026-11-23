@@ -21,15 +21,9 @@ public interface IWaitingRoomService
         NotHost
     }
 
-    Task<Result<JoinResponse, WaitingRoomError>> Join(
-        string connectionId,
-        Guid sessionId,
-        Guid? userId,
-        Guid gameId,
-        Role role,
-        string? teamName);
+    Task<Result<JoinResponse, WaitingRoomError>> Join(Binding binding);
 
-    Task<Result<WaitingRoomError>> Leave(string connectionId, Guid gameId, Guid teamId);
-    
+    Task<Result<WaitingRoomError>> Leave(Guid sessionId, Guid gameId, Guid teamId);
+
     Task<DisconnectedTeam?> Disconnect(string connectionId);
 }

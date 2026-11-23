@@ -25,17 +25,8 @@ public sealed class SessionMiddleware(RequestDelegate next)
                 MaxAge = TimeSpan.FromHours(12),
             });
         }
+
         context.Items[SessionCookie.Name] = sessionId;
         return next(context);
     }
-}
-
-public static class SessionHttpContextExtensions
-{
-    public static Guid GetSessionId(this HttpContext context) =>
-        context.TryGetSessionId()
-        ?? throw new InvalidOperationException("SessionMiddleware не подключена");
-
-    public static Guid? TryGetSessionId(this HttpContext context) =>
-        context.Items[SessionCookie.Name] is Guid sessionId ? sessionId : null;
 }

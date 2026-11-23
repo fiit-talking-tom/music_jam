@@ -20,3 +20,13 @@ export type GameDto = GameShort & {
   mode : Mode;
   state : string;
 }
+
+export type GameInviteInfo = {
+  gameId: string;
+  inviteCode : string;
+  inviteLink : string;
+}
+
+export type BackUrlResponse = {
+  backUrl : string;
+}
