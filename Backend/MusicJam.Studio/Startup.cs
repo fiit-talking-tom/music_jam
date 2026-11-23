@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MusicJam.Studio.Configurations;
 using MusicJam.Studio.Constants;
 using MusicJam.Studio.Extensions;
 using Newtonsoft.Json;
@@ -17,6 +16,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Shared.Auth;
 
 namespace MusicJam.Studio;
 
