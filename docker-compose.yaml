@@ -1,15 +1,17 @@
 services:
   prometheus:
     image: "prom/prometheus"
-    ports:
-      - "9090:9090"
+    restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
 
   grafana:
     image: "grafana/grafana-oss"
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   postgres:
     image: postgres:18
@@ -74,3 +76,4 @@ services:
 
 volumes:
   postgres_data:
+  grafana_data:

@@ -1,6 +1,10 @@
 scrape_configs:
-  - job_name: "prometheus"
-    # Override the global default and scrape targets from this job every 5 seconds.
+  - job_name: "musicjam-studio"
     scrape_interval: 5s
     static_configs:
-      - targets: ["host.docker.internal:5149"]
+      - targets: ["musicjam-studio:8080"]
+
+  - job_name: "musicjam-runtime"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["musicjam-runtime:8080"]

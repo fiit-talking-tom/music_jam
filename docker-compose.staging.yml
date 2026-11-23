@@ -17,12 +17,16 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "3000:3000"
+      - "9090:9090"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - certbot_www:/var/www/certbot:ro
       - certbot_certs:/etc/letsencrypt:ro
     depends_on:
       - musicjam-gateway
+      - grafana
+      - prometheus
 
   certbot:
     image: certbot/certbot
@@ -31,6 +35,10 @@ services:
       - certbot_certs:/etc/letsencrypt
     entrypoint: >
       sh -c "trap exit TERM; while :; do certbot renew; sleep 12h; done"
+
+    grafana:
+      environment:
+        GF_SERVER_ROOT_URL: "https://test.musicjam.fun:3000/"
 
 volumes:
   certbot_www:
