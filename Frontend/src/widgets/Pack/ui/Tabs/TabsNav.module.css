@@ -1,0 +1,74 @@
+.nav {
+    position: relative;
+    z-index: 0;
+    box-sizing: border-box;
+    width: calc(100% - 2 * var(--page-padding));
+    margin: 0 auto;
+    min-height: 3.875rem;
+    padding: 0 2.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 3.4375rem;
+    font-family: "Montserrat", sans-serif;
+}
+
+.nav::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    top: 2.4375rem;
+    bottom: -1.5rem;
+    background: #232327;
+    border-radius: 1.5rem 1.5rem 0 0;
+    box-shadow: 0 -0.125rem 0.5rem rgba(0, 0, 0, 0.12);
+}
+
+.tab {
+    box-sizing: border-box;
+    flex: 0 0 22.875rem;
+    max-width: calc(100% - 1.75rem);
+    min-width: 0;
+    height: 3.0625rem;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 1.5rem 1.5rem 0 0;
+    background: #232327;
+    color: #aaa8b1;
+    font-family: inherit;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.tab:hover:not(.tabActive) {
+    color: #fff;
+}
+
+.tabActive {
+    height: 3.875rem;
+    background: linear-gradient(154deg, #38383e 0%, #36363c 100%);
+    color: #fff;
+    cursor: default;
+}
+
+.label {
+    position: relative;
+    padding-bottom: 0.125rem;
+}
+
+.tabActive .label::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.25rem;
+    max-width: 100%;
+    height: 0.25rem;
+    background: #32c76a;
+}

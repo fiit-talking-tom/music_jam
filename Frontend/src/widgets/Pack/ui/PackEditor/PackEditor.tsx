@@ -1,17 +1,14 @@
 import type { PackDto } from "@/entities/pack";
 import { usePackDraft } from "@/widgets/Pack/model/usePackDraft.ts";
-import { useUpsertPack } from "@/features/pack/api/useUpsertPack.ts";
 import { useState } from "react";
 import type { Tab } from "@/widgets/Pack/model/types.ts";
 import { PackDraftProvider } from "@/widgets/Pack/model/PackDraftContext.tsx";
-import Input from "@/shared/ui/Input/Input.tsx";
 import TabsNav from "@/widgets/Pack/ui/Tabs/TabsNav.tsx";
 import TabContent from "@/widgets/Pack/ui/Tabs/TabContent.tsx";
 import styles from "./PackEditor.module.css"
-import { Button } from "@/shared/ui/Button/Button.tsx";
 import { usePack } from "@/entities/pack/api/pack.queries.ts";
-import { packSchema } from "@/features/pack/model/schema.ts";
 import axios from "axios";
+import { packSchema, useUpsertPack } from "@/features/pack";
 
 const PackEditor = ({ packId } : { packId : string }) => {
   const { data, error } = usePack(packId);
@@ -21,7 +18,7 @@ const PackEditor = ({ packId } : { packId : string }) => {
 
 export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: PackDto }) => {
   const draft = usePackDraft(packId, initial);
-  const [activeTab, setActiveTab] = useState<Tab>('questions');
+  const [activeTab, setActiveTab] = useState<Tab>('field');
 
   const [error, setError] = useState('');
 
@@ -41,20 +38,30 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
     <PackDraftProvider draft={draft}>
       <div className={styles.page}>
         <div className={styles.options}>
+          <input
+            value={draft.pack.name}
+            className={styles.title}
+            onChange={(e) => {
+              draft.setName(e.target.value);
+            }}
+            placeholder={"Название пака"}
+          />
           <TabsNav active={activeTab} onChange={setActiveTab} />
-          <div className={styles.title}>
-            <Input
-              value={draft.pack.name}
-              onChange={(e) => {
-                draft.setName(e.target.value);
-              }}
-            />
-          </div>
-          <div className={styles.packSave}>
-            <Button text={isNew ? 'Создать' : 'Сохранить'} onClick={onSave} disabled={upsert.isPending} />
-          </div>
         </div>
         <TabContent active={activeTab} />
+        <div className={styles.wrapper}>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={onSave}
+            disabled={upsert.isPending}
+          >
+            <span className={styles.content}>
+              <img src="/SaveIcon.svg" alt={"Save pack"}/>
+              <span className={styles.label}>{isNew ? 'Создать' : 'Сохранить'} пак</span>
+            </span>
+          </button>
+        </div>
       </div>
     </PackDraftProvider>
   );

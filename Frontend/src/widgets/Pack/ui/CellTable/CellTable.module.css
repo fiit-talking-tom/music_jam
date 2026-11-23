@@ -1,56 +1,76 @@
 .cell {
     box-sizing: border-box;
-    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 4.0625rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 54px;
-    padding: 0 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 2px dashed #333;
-    border-radius: 0.75rem;
-    color: #666;
-    font-weight: 500;
-    text-align: center;
+    border: 0.0625rem solid #bab9d6;
+    border-radius: 0.3rem;
     overflow: hidden;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Временно */
-.filled {
-    background: #2a2a2a;
-    color: #fff;
-    border: 2px solid #3e3e3e;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.filled::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 20%;
-    bottom: 20%;
-    width: 3px;
-    background: var(--color-primary);
-    border-radius: 0 4px 4px 0;
+    font-family: "Montserrat", sans-serif;
+    transition: border-color 0.15s, background-color 0.15s;
 }
 
 .dragOver {
-    border-style: dashed;
-    border-color: var(--color-primary);
-    background: rgba(29, 185, 84, 0.05);
-    color: #fff;
-    transform: translateY(-1px);
+    border-color: #32c76a;
+    background: rgba(50, 199, 106, 0.15);
 }
 
-.text {
+.content {
+    width: 100%;
     min-width: 0;
-    max-width: 100%;
-    font-size: 0.85rem;
-    line-height: 1.2;
+    padding: 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.icon {
+    flex-shrink: 0;
+    height: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.icon i {
+    display: block;
+    width: 0.14rem;
+    border-radius: 0.1rem;
+    background: linear-gradient(180deg, #933ec5 0%, #6d2c93 100%);
+}
+
+.icon i:nth-child(1) { height: 0.6rem; }
+.icon i:nth-child(2) { height: 1.2rem; }
+.icon i:nth-child(3) { height: 0.85rem; }
+.icon i:nth-child(4) { height: 1rem; }
+.icon i:nth-child(5) { height: 0.5rem; }
+
+.texts {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.1875rem;
+}
+
+.title,
+.subtitle {
+    display: -webkit-box;
+    overflow-wrap: anywhere;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
+}
+
+.title {
+    color: #f8f8f8;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 400;
 }

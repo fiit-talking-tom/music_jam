@@ -29,6 +29,7 @@ export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) =
 
   if (!isEditing) {
     return (
+
       <button
         type="button"
         className={styles.addButton}
@@ -36,7 +37,11 @@ export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) =
         aria-label={label}
         onClick={() => setIsEditing(true)}
       >
-        +
+        <img
+          src="/Plus.svg"
+          alt="Add Item Icon"
+          className={styles.addIcon}
+        />
       </button>
     );
   }

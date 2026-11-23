@@ -17,11 +17,17 @@ const RoundField = ( { idx } : { idx : number }) => {
                 <th key={cIdx} className={styles.costTh}>
                   <div className={styles.thContent}>
                     <span>{cost}</span>
+                    {/* это херня нужна чтобы я не забыл что нужно сделать удаление*/}
+                    {/*<span className={styles.costMark} aria-hidden="true" />*/}
                   </div>
                 </th>
               ))}
-              <th>
-                <AddItem label="Добавить стоимость" inputType="number" onSubmit={(value) => draft.addCost(Number(value))}/>
+              <th className={styles.addTh}>
+                <AddItem
+                  label="Добавить стоимость"
+                  inputType="number"
+                  onSubmit={(value) => draft.addCost(Number(value))}
+                />
               </th>
             </tr>
           </thead>
@@ -30,13 +36,15 @@ const RoundField = ( { idx } : { idx : number }) => {
             <tr key={row}>
               <td className={styles.catTd}>
                 <div className={styles.tdContent}>
-                  <span>{category}</span>
+                  {/* это херня нужна чтобы я не забыл что нужно сделать удаление*/}
+                  {/*<span className={styles.handle} aria-hidden="true">⠿</span>*/}
+                  <span className={styles.catName}>{category}</span>
                 </div>
               </td>
 
               {round.costs.map((cost, col) => {
                 return (
-                  <td key={col}>
+                  <td key={col} className={styles.cellTd}>
                     <CellTable
                       cell={draft.pack.rounds[idx].questions[row]?.[col] ?? null}
                       cost={cost}
@@ -49,7 +57,7 @@ const RoundField = ( { idx } : { idx : number }) => {
             </tr>
           ))}
           <tr>
-            <td>
+            <td className={styles.addTd}>
               <AddItem label="Добавить категорию" onSubmit={draft.addCategory} />
             </td>
           </tr>

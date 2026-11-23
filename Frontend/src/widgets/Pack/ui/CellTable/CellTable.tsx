@@ -5,8 +5,6 @@ import clsx from "clsx";
 import type { QuestionDtoCard } from "@/entities/question";
 import type { CellDraft } from "@/widgets/Pack/model/draft.ts";
 
-const EMPTY_TEXT = '-';
-
 type CellTableProps = {
   cost : number
   category : string
@@ -57,7 +55,16 @@ const CellTable = ({cost, category, cell, onCellDrop} : CellTableProps) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <span className={style.text}>{answer ?? EMPTY_TEXT}</span>
+      {isFilled && (
+        <div className={style.content}>
+          <img src="/Note.svg" alt="Note" />
+          {answer && (
+            <div className={style.texts}>
+              <span className={style.title}>{answer}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

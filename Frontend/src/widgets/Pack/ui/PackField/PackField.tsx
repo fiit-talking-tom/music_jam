@@ -1,9 +1,9 @@
 import styles from "./PackField.module.css"
-import { Button } from "@/shared/ui/Button/Button.tsx";
 import RoundField from "@/widgets/Pack/ui/RoundField/RoundField.tsx";
 import PackQuestionsSection from "@/widgets/Pack/ui/PackQuestionsSection/PackQuestionsSection.tsx";
 import { AddItem } from "@/shared/ui/AddItem/AddItem.tsx";
 import { usePackDraftContext } from "@/widgets/Pack/model/PackDraftContext.tsx";
+import clsx from "clsx";
 
 const PackField = () => {
   const draft  = usePackDraftContext();
@@ -15,16 +15,19 @@ const PackField = () => {
       </div>
       <div className={styles.round}>
         <div className={styles.roundSwitcher}>
-          <div className={styles.roundTitles}>
-            {draft.pack.rounds.map((round, index) => (
-              <Button
+            {draft.pack.rounds.map((round, index) => {
+              const isActive = index === draft.roundIndex;
+              return (<button
                 key={index}
                 type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={clsx(styles.roundTab, isActive && styles.roundTabActive)}
                 onClick={() => draft.setRoundIndex(index)}
-                text={round.name}
-              />
-            ))}
-          </div>
+              >
+                {round.name}
+              </button>)
+            })}
           <div className={styles.addRound}>
             <AddItem label={"Добавить раунд"} onSubmit={draft.addRound} />
           </div>
