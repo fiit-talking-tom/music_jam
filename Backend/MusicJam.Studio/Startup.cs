@@ -78,7 +78,7 @@ public class Startup(
         {
             lc.Enrich.FromLogContext()
                 .Enrich.WithProperty("Environment", env.EnvironmentName)
-                .Enrich.WithProperty("Service", "MusicJam.Runtime")
+                .Enrich.WithProperty("Service", "MusicJam.Studio")
                 .ReadFrom.Configuration(configuration);
 
             if (!string.IsNullOrEmpty(elasticUrl))
