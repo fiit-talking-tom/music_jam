@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Runtime.Clients.StudioClient;
+using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Hubs;
 using MusicJam.Runtime.Middlewares;
 using MusicJam.Runtime.Services.GameService;
@@ -31,11 +32,54 @@ public class Startup(IConfiguration configuration)
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services
+            .ConfigureSettings(configuration)
+            .AddServices()
+            .AddStorages()
+            .AddTelemetry()
+            .AddControllerOptions()
+            .AddHubOptions();
+        
         services.AddOptions<EnvironmentSettings>().BindConfiguration(EnvironmentSettings.SectionName);
+        ConfigureAuthentication(services);
+        ConfigureClient(services);
+        services.AddAuthorization();
 
+        services.AddHttpContextAccessor();
+        services.AddTransient<ForwardAccessTokenHandler>();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app
+            .UseMiddleware<SessionMiddleware>()
+            .UseMiddleware<EnrichBindingContextMiddleware>()
+            .UseRouting()
+            .UseAuthentication()
+            .UseAuthorization()
+            .UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<GameHub>(GameHub.Path);
+            })
+            .UseOpenTelemetryPrometheusScrapingEndpoint();
+    }
+
+    private void ConfigureClient(IServiceCollection services)
+    {
+        services.AddHttpClient<IStudioClient, StudioClient>(client =>
+            {
+                var studioUrl = Configuration["Services:Studio"]
+                                ?? throw new InvalidOperationException("Не задан адрес Studio: Services:Studio");
+                client.BaseAddress = new Uri(studioUrl);
+            })
+            .AddHttpMessageHandler<ForwardAccessTokenHandler>();
+    }
+    
+    private void ConfigureAuthentication(IServiceCollection services)
+    {
         var jwtSettings = new JwtSettings();
         Configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
-
         services
             .AddAuthentication(options =>
             {
@@ -62,68 +106,5 @@ public class Startup(IConfiguration configuration)
                     }
                 };
             });
-        services.AddAuthorization();
-
-        services.AddControllers()
-            .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
-        
-        services.AddSingleton<HubTracingFilter>();
-        services.AddSignalR(options =>
-                options.AddFilter<HubTracingFilter>())
-            .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
-        services.AddSingleton<IGameStorage, GameStorage>();
-        services.AddSingleton<IBindingsStorage, InMemoryBindingsStorage>();
-        services.AddSingleton<IWaitingRoomService, WaitingRoomService>()
-            .Decorate<IWaitingRoomService, WaitingRoomServiceLoggingDecorator>();
-        services.AddSingleton<IInvitesStorage, InMemoryInvitesStorage>();
-        services.AddScoped<IGameService, GameService>()
-            .Decorate<IGameService, GameServiceLoggingDecorator>();
-        services.AddScoped<IUsersService, UsersService>()
-            .Decorate<IUsersService, UserServiceLoggingDecorator>();;
-        services.AddScoped<IInvitesService, InvitesService>()
-            .Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
-
-        services.AddHttpContextAccessor();
-        services.AddTransient<ForwardAccessTokenHandler>();
-        services.AddHttpClient<IStudioClient, StudioClient>(client =>
-            {
-                var studioUrl = Configuration["Services:Studio"]
-                                ?? throw new InvalidOperationException("Не задан адрес Studio: Services:Studio");
-                client.BaseAddress = new Uri(studioUrl);
-            })
-            .AddHttpMessageHandler<ForwardAccessTokenHandler>();
-
-        services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("MusicJam.Runtime"))
-            .WithLogging()
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .AddAspNetCoreInstrumentation()
-                    .AddSource(RuntimeActivitySource.Name)
-                    .AddHttpClientInstrumentation();
-            })
-            .WithMetrics(metrics => metrics
-                .AddPrometheusExporter()
-                .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation());
-    }
-
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        app
-            .UseMiddleware<SessionMiddleware>()
-            .UseMiddleware<EnrichBindingContextMiddleware>()
-            .UseRouting()
-            .UseAuthentication()
-            .UseAuthorization()
-            .UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapHub<GameHub>(GameHub.Path);
-            })
-            .UseOpenTelemetryPrometheusScrapingEndpoint();
     }
 }

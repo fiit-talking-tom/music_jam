@@ -28,21 +28,25 @@ public class Startup(IConfiguration configuration)
             .ConfigureSettings(configuration)
             .AddObjectStorage()
             .AddServices()
-            .AddStorages();
+            .AddStorages()
+            .AddTelemetry()
+            .AddControllerOptions();
 
-        services.AddControllers(options =>
-        {
-            options.OutputFormatters.Insert(0, new
-                NewtonsoftJsonOutputFormatter(new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Converters = { new StringEnumConverter() }
-                }, ArrayPool<char>.Shared, options));
-            options.RespectBrowserAcceptHeader = true;
-        })
-        .AddJsonOptions(options =>
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        
+        services.AddAuthorization();
+        ConfigureAuthentication(services);
+        ConfigureDbContext(services);
+    }
 
+    private void ConfigureDbContext(IServiceCollection services)
+    {
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .UseSnakeCaseNamingConvention());
+    }
+    
+    private void ConfigureAuthentication(IServiceCollection services)
+    {
         var jwtSettings = new JwtSettings();
         configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
 
@@ -65,27 +69,6 @@ public class Startup(IConfiguration configuration)
                         }
                     };
                 });
-        services.AddAuthorization();
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention());
-
-        services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("MusicJam.Studio"))
-            .WithLogging()
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .AddAspNetCoreInstrumentation()
-                    .AddSource(StudioActivitySource.Name)
-                    .AddSource("Npgsql")
-                    .AddHttpClientInstrumentation();
-            })
-            .WithMetrics(metrics => metrics
-                .AddPrometheusExporter()
-                .AddHttpClientInstrumentation()
-                .AddMeter("Npgsql")
-                .AddAspNetCoreInstrumentation());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

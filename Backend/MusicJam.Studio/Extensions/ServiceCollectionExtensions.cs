@@ -1,6 +1,11 @@
-﻿using Amazon.S3;
+﻿using System.Buffers;
+using System.Text.Json.Serialization;
+using Amazon.S3;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MusicJam.Studio.Configurations;
+using MusicJam.Studio.Infrastructure.Data;
 using MusicJam.Studio.Services.AuthService;
 using MusicJam.Studio.Services.PacksService;
 using MusicJam.Studio.Services.QuestionsService;
@@ -11,6 +16,13 @@ using MusicJam.Studio.Storages.QuestionStorage;
 using MusicJam.Studio.Storages.RoundStorage;
 using MusicJam.Studio.Storages.TrackStorage;
 using MusicJam.Studio.Storages.UsersStorage;
+using MusicJam.Studio.Telemetry;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Auth;
 
 namespace MusicJam.Studio.Extensions;
@@ -71,6 +83,44 @@ public static class ServiceCollectionExtensions
             .Configure<ObjectStorageSettings>(configuration.GetSection(nameof(ObjectStorageSettings)))
             .Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
 
+        return services;
+    }
+    
+    public static IServiceCollection AddTelemetry(this IServiceCollection services)
+    {
+        services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService("MusicJam.Studio"))
+            .WithLogging()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddSource(StudioActivitySource.Name)
+                    .AddSource("Npgsql")
+                    .AddHttpClientInstrumentation();
+            })
+            .WithMetrics(metrics => metrics
+                .AddPrometheusExporter()
+                .AddHttpClientInstrumentation()
+                .AddMeter("Npgsql")
+                .AddAspNetCoreInstrumentation());
+        return services;
+    }
+    
+    public static IServiceCollection AddControllerOptions(this IServiceCollection services)
+    {
+        services.AddControllers(options =>
+            {
+                options.OutputFormatters.Insert(0, new
+                    NewtonsoftJsonOutputFormatter(new JsonSerializerSettings
+                    {
+                        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                        Converters = { new StringEnumConverter() }
+                    }, ArrayPool<char>.Shared, options));
+                options.RespectBrowserAcceptHeader = true;
+            })
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         return services;
     }
 }

@@ -10,21 +10,21 @@ public class WaitingRoomServiceLoggingDecorator(
 {
     public async Task<Result<JoinResponse, IWaitingRoomService.WaitingRoomError>> Join(Binding binding)
     {
-        logger.LogInformation("Join game with gameId = {connectionId} and role = {role}",
+        logger.LogInformation("Join game with gameId = {gameId} and role = {role}",
             binding.GameId,
             binding.Role);
 
         var roleRsult = await waitingRoomService.Join(binding);
         if (roleRsult.TryGetFault(out var error, out var game))
         {
-            logger.LogInformation("Join game with gameId = {connectionId} and role = {role} failed with statusCode = {StatusCode}",
+            logger.LogInformation("Join game with gameId = {gameId} and role = {role} failed with statusCode = {StatusCode}",
                 binding.GameId,
                 binding.Role,
                 error);
             return error;
         }
 
-        logger.LogInformation("Join game with gameId = {connectionId} and role = {role} was successful",
+        logger.LogInformation("Join game with gameId = {gameId} and role = {role} was successful",
             binding.GameId,
             binding.Role);
         return game;

@@ -5,33 +5,30 @@ using Shared;
 
 namespace MusicJam.Runtime.Services.UsersService;
 
-public class UserServiceLoggingDecorator(
+public class UsersServiceLoggingDecorator(
     IUsersService userService,
-    ILogger<UserServiceLoggingDecorator> logger) : IUsersService
+    ILogger<UsersServiceLoggingDecorator> logger) : IUsersService
 {
     public async Task<Result<CheckRoleResponse?, IUsersService.UserError>> GetRole(Guid gameId, Guid sessionId)
     {
         using var activity = RuntimeActivitySource.Source.StartActivity("UserService.GetRole");
         activity?.SetTag("game.id", gameId);
         
-        logger.LogInformation("GetRole game with gameId = {gameId} and person = {sessionId}",
-            gameId,
-            sessionId);
+        logger.LogInformation("GetRole game with gameId = {gameId}",
+            gameId);
 
         var roleRsult = await userService.GetRole(gameId, sessionId);
         if (roleRsult.TryGetFault(out var error, out var game))
         {
             activity?.SetStatus(ActivityStatusCode.Error, error.ToString());
-            logger.LogInformation("GetRole game with gameId = {gameId} and person = {sessionId} failed with statusCode = {StatusCode}",
+            logger.LogInformation("GetRole game with gameId = {gameId} failed with statusCode = {StatusCode}",
                 gameId,
-                sessionId,
                 error);
             return error;
         }
 
-        logger.LogInformation("GetRole game with gameId = {gameId} and person = {sessionId} was successful",
-            gameId,
-            sessionId);
+        logger.LogInformation("GetRole game with gameId = {gameId} was successful",
+            gameId);
         return game;
     }
 
