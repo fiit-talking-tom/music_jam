@@ -88,7 +88,13 @@ jobs:
           S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
           S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
           S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+          GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          ELASTIC_VERSION=8.16.1
+          ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+          LOGSTASH_INTERNAL_PASSWORD=${{ secrets.LOGSTASH_INTERNAL_PASSWORD }}
+          KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
           EOF
+          echo "admin:$(openssl passwd -apr1 '${{ secrets.PROMETHEUS_PASSWORD }}')" > nginx/conf.d/.htpasswd
 
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
@@ -96,7 +102,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: ".env,docker-compose.yaml,docker-compose.staging.yml,nginx"
+          source: ".env,docker-compose.yaml,docker-compose.staging.yml,nginx,prometheus.yml,setup,elasticsearch,logstash,kibana"
           target: "/opt/musicjam"
 
       - name: Deploy
@@ -109,7 +115,8 @@ jobs:
             set -e
             cd /opt/musicjam
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose -f docker-compose.yaml -f docker-compose.staging.yml pull
-            docker compose -f docker-compose.yaml -f docker-compose.staging.yml up -d
+            docker compose -f docker-compose.yaml -f docker-compose.staging.yml pull --ignore-buildable
+            docker compose -f docker-compose.yaml -f docker-compose.staging.yml up -d --build
+            docker compose -f docker-compose.yaml -f docker-compose.staging.yml --profile setup run --rm setup
             docker compose exec nginx nginx -s reload
             docker image prune -f
