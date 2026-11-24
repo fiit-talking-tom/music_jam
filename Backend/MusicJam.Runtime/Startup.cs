@@ -1,80 +1,35 @@
 ﻿using System.Text;
-using Elastic.Channels;
-using Elastic.Ingest.Elasticsearch;
-using Elastic.Ingest.Elasticsearch.DataStreams;
-using Elastic.Serilog.Sinks;
-using Elastic.Transport;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Runtime.Clients.StudioClient;
-using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Hubs;
 using MusicJam.Runtime.Middlewares;
+using MusicJam.Runtime.Services.GameService;
+using MusicJam.Runtime.Services.InvitesService;
+using MusicJam.Runtime.Services.UsersService;
+using MusicJam.Runtime.Services.WaitingRoomService;
+using MusicJam.Runtime.Storages.BindingsStorage;
+using MusicJam.Runtime.Storages.GameStorage;
+using MusicJam.Runtime.Storages.InvitesStorage;
 using MusicJam.Studio.Constants;
-using Serilog;
 using Shared;
 using Shared.Auth;
 
 namespace MusicJam.Runtime;
 
-public class Startup(
-    IConfiguration configuration,
-    IWebHostEnvironment env)
+public class Startup(IConfiguration configuration)
 {
     private IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services
-            .ConfigureSettings(configuration)
-            .AddServices()
-            .AddStorages()
-            .AddTelemetry(configuration)
-            .AddControllerOptions()
-            .AddHubOptions();
-        
         services.AddOptions<EnvironmentSettings>().BindConfiguration(EnvironmentSettings.SectionName);
-        ConfigureAuthentication(services);
-        ConfigureClient(services);
-        ConfigureSerilog(services);
-        services.AddAuthorization();
 
-        services.AddHttpContextAccessor();
-        services.AddTransient<ForwardAccessTokenHandler>();
-    }
-
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        app
-            .UseSerilogRequestLogging()
-            .UseMiddleware<SessionMiddleware>()
-            .UseMiddleware<EnrichBindingContextMiddleware>()
-            .UseRouting()
-            .UseAuthentication()
-            .UseAuthorization()
-            .UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapHub<GameHub>(GameHub.Path);
-            })
-            .UseOpenTelemetryPrometheusScrapingEndpoint();
-    }
-
-    private void ConfigureClient(IServiceCollection services)
-    {
-        services.AddHttpClient<IStudioClient, StudioClient>(client =>
-            {
-                var studioUrl = Configuration["Services:Studio"]
-                                ?? throw new InvalidOperationException("Не задан адрес Studio: Services:Studio");
-                client.BaseAddress = new Uri(studioUrl);
-            })
-            .AddHttpMessageHandler<ForwardAccessTokenHandler>();
-    }
-    
-    private void ConfigureAuthentication(IServiceCollection services)
-    {
         var jwtSettings = new JwtSettings();
         Configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
+
         services
             .AddAuthentication(options =>
             {
@@ -101,39 +56,49 @@ public class Startup(
                     }
                 };
             });
+        services.AddAuthorization();
+
+        services.AddControllers()
+            .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+
+
+        services.AddSignalR()
+            .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+        services.AddSingleton<IGameStorage, GameStorage>();
+        services.AddSingleton<IBindingsStorage, InMemoryBindingsStorage>();
+        services.AddSingleton<IWaitingRoomService, WaitingRoomService>();
+        services.AddSingleton<IInvitesStorage, InMemoryInvitesStorage>();
+        services.AddScoped<IGameService, GameService>();
+        services.Decorate<IGameService, GameServiceLoggerDecorator>();
+        services.AddScoped<IUsersService, UsersService>();
+        services.AddScoped<IInvitesService, InvitesService>();
+        services.Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
+
+        services.AddHttpContextAccessor();
+        services.AddTransient<ForwardAccessTokenHandler>();
+        services.AddHttpClient<IStudioClient, StudioClient>(client =>
+            {
+                var studioUrl = Configuration["Services:Studio"]
+                                ?? throw new InvalidOperationException("Не задан адрес Studio: Services:Studio");
+                client.BaseAddress = new Uri(studioUrl);
+            })
+            .AddHttpMessageHandler<ForwardAccessTokenHandler>();
     }
-    
-    private void ConfigureSerilog(IServiceCollection services)
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        var elasticUrl = configuration["Elastic:Url"];
-        var elasticUsername = configuration["Elastic:Username"] ?? "elastic";
-        var elasticPassword = configuration["Elastic:Password"] ?? string.Empty;
-
-        services.AddSerilog((_, lc) =>
-        {
-            lc.Enrich.FromLogContext()
-                .Enrich.WithProperty("Environment", env.EnvironmentName)
-                .Enrich.WithProperty("Service", "MusicJam.Runtime")
-                .ReadFrom.Configuration(configuration);
-
-            if (!string.IsNullOrEmpty(elasticUrl))
-                lc.WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
-                    {
-                        opts.DataStream =
-                            new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
-                        opts.BootstrapMethod = BootstrapMethod.Failure;
-                        opts.ConfigureChannel = channelOpts =>
-                        {
-                            channelOpts.BufferOptions = new BufferOptions
-                            {
-                                ExportMaxConcurrency = 10
-                            };
-                        };
-                    },
-                    transport =>
-                    {
-                        transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
-                    });
-        });
+        app
+            .UseMiddleware<SessionMiddleware>()
+            .UseMiddleware<EnrichBindingContextMiddleware>()
+            .UseRouting()
+            .UseAuthentication()
+            .UseAuthorization()
+            .UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<GameHub>(GameHub.Path);
+            });
     }
 }

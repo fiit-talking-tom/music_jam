@@ -1,23 +1,21 @@
-﻿using System.Text;
+﻿using System.Buffers;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Studio.Constants;
 using MusicJam.Studio.Extensions;
-using Elastic.Channels;
-using Elastic.Ingest.Elasticsearch;
-using Elastic.Ingest.Elasticsearch.DataStreams;
-using Elastic.Serilog.Sinks;
-using Elastic.Transport;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using System.Text.Json.Serialization;
 using MusicJam.Studio.Infrastructure.Data;
-using Serilog;
 using Shared.Auth;
 
 namespace MusicJam.Studio;
 
-public class Startup(
-    IConfiguration configuration,
-    IWebHostEnvironment env)
+public class Startup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
@@ -25,25 +23,21 @@ public class Startup(
             .ConfigureSettings(configuration)
             .AddObjectStorage()
             .AddServices()
-            .AddStorages()
-            .AddTelemetry(configuration)
-            .AddControllerOptions();
-        
-        services.AddAuthorization();
-        ConfigureAuthentication(services);
-        ConfigureDbContext(services);
-        ConfigureSerilog(services);
-    }
+            .AddStorages();
 
-    private void ConfigureDbContext(IServiceCollection services)
-    {
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention());
-    }
-    
-    private void ConfigureAuthentication(IServiceCollection services)
-    {
+        services.AddControllers(options =>
+        {
+            options.OutputFormatters.Insert(0, new
+                NewtonsoftJsonOutputFormatter(new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Converters = { new StringEnumConverter() }
+                }, ArrayPool<char>.Shared, options));
+            options.RespectBrowserAcceptHeader = true;
+        })
+        .AddJsonOptions(options =>
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
         var jwtSettings = new JwtSettings();
         configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
 
@@ -66,51 +60,20 @@ public class Startup(
                         }
                     };
                 });
-    }
-    
-    private void ConfigureSerilog(IServiceCollection services)
-    {
-        var elasticUrl = configuration["Elastic:Url"];
-        var elasticUsername = configuration["Elastic:Username"] ?? "elastic";
-        var elasticPassword = configuration["Elastic:Password"] ?? string.Empty;
-
-        services.AddSerilog((_, lc) =>
-        {
-            lc.Enrich.FromLogContext()
-                .Enrich.WithProperty("Environment", env.EnvironmentName)
-                .Enrich.WithProperty("Service", "MusicJam.Studio")
-                .ReadFrom.Configuration(configuration);
-
-            if (!string.IsNullOrEmpty(elasticUrl))
-                lc.WriteTo.Elasticsearch([new Uri(elasticUrl)], opts =>
-                    {
-                        opts.DataStream =
-                            new DataStreamName("logs", "musicjam", env.EnvironmentName.ToLowerInvariant());
-                        opts.BootstrapMethod = BootstrapMethod.Failure;
-                        opts.ConfigureChannel = channelOpts =>
-                        {
-                            channelOpts.BufferOptions = new BufferOptions
-                            {
-                                ExportMaxConcurrency = 10
-                            };
-                        };
-                    },
-                    transport =>
-                    {
-                        transport.Authentication(new BasicAuthentication(elasticUsername, elasticPassword));
-                    });
-        });
+        services.AddAuthorization();
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .UseSnakeCaseNamingConvention()
+                .EnableSensitiveDataLogging());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app
-            .UseSerilogRequestLogging()
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseEndpoints(endpoints => { endpoints.MapControllers(); })
-            .UseOpenTelemetryPrometheusScrapingEndpoint();
+            .UseEndpoints(endpoints => { endpoints.MapControllers(); });
     }
 
     private static TokenValidationParameters GetTokenValidationParameters(JwtSettings jwtSettings) => new()

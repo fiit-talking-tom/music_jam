@@ -1,98 +1,4 @@
 services:
-  setup:
-    profiles:
-      - setup
-    build:
-      context: setup/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    init: true
-    volumes:
-      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
-      - ./setup/lib.sh:/lib.sh:ro,Z
-      - ./setup/roles:/roles:ro,Z
-    environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
-      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
-      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
-      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
-      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
-    depends_on:
-      - elasticsearch
-
-  elasticsearch:
-    build:
-      context: elasticsearch/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
-      - elasticsearch:/usr/share/elasticsearch/data:Z
-    environment:
-      node.name: elasticsearch
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      discovery.type: single-node
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 60s
-
-  logstash:
-    build:
-      context: logstash/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
-    environment:
-      LS_JAVA_OPTS: -Xms256m -Xmx256m
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  kibana:
-    build:
-      context: kibana/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
-    environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  prometheus:
-    image: "prom/prometheus"
-    restart: unless-stopped
-    volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-
-  grafana:
-    image: "grafana/grafana-oss"
-    restart: unless-stopped
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
-    volumes:
-      - grafana_data:/var/lib/grafana
-
-  jaeger:
-    image: jaegertracing/jaeger:2.3.0
-    command:
-      - --set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318
-      - --set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317
-    restart: unless-stopped
-
   postgres:
     image: postgres:18
     restart: unless-stopped
@@ -131,8 +37,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JwtSettings__SecretKey: "${JWT_SECRET}"
@@ -141,10 +45,6 @@ services:
       ObjectStorageSettings__AccessKey: "${S3_ACCESS_KEY}"
       ObjectStorageSettings__SecretKey: "${S3_SECRET_KEY}"
       ObjectStorageSettings__BucketName: "${S3_BUCKET_NAME}"
-      Elastic__Url: "http://elasticsearch:9200"
-      Elastic__Username: "elastic"
-      Elastic__Password: "${ELASTIC_PASSWORD}"
-      Jaeger__Endpoint: "http://jaeger:4318/v1/traces"
 
   musicjam-runtime:
     build:
@@ -155,18 +55,10 @@ services:
     depends_on:
       musicjam-studio:
         condition: service_started
-      elasticsearch:
-        condition: service_healthy
     environment:
       JwtSettings__SecretKey: "${JWT_SECRET}"
       JwtSettings__Issuer: "${JWT_ISSUER}"
       JwtSettings__Audience: "${JWT_AUDIENCE}"
-      Elastic__Url: "http://elasticsearch:9200"
-      Elastic__Username: "elastic"
-      Elastic__Password: "${ELASTIC_PASSWORD}"
-      Jaeger__Endpoint: "http://jaeger:4318/v1/traces"
 
 volumes:
   postgres_data:
-  grafana_data:
-  elasticsearch:
