@@ -11,6 +11,15 @@ services:
       Environment__SslEnabled: true
       Environment__Domain: "test.musicjam.fun"
 
+  elasticsearch:
+    image: docker.io/elasticsearch:${ELASTIC_VERSION}
+
+  logstash:
+    image: docker.io/logstash:${ELASTIC_VERSION}
+
+  kibana:
+    image: docker.io/kibana:${ELASTIC_VERSION}
+    
   nginx:
     image: nginx:1.27
     restart: unless-stopped
