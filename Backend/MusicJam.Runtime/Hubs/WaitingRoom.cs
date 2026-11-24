@@ -54,6 +54,7 @@ public sealed partial class GameHub
         }
 
         var group = GroupName(gameId);
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, group);
         await Clients.Group(group).TeamLeft(teamId);
     }
