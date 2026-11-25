@@ -35,11 +35,8 @@
     box-sizing: border-box;
     height: 100%;
     min-height: 4.0625rem;
-    padding: 0.625rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1.3125rem;
     border: 0.0625rem solid #bab9d6;
     border-radius: 0.3rem;
     font-size: 1.615rem;
@@ -61,10 +58,8 @@
     box-sizing: border-box;
     height: 100%;
     min-height: 4.0625rem;
-    padding: 0.625rem;
     display: flex;
     align-items: center;
-    gap: 0.625rem;
     border: 0.0625rem solid #bab9d6;
     border-radius: 0.3rem;
 }

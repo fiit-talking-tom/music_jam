@@ -2,10 +2,13 @@ import styles from "./RoundField.module.css"
 import { AddItem } from "@/shared/ui/AddItem/AddItem.tsx";
 import CellTable from "@/widgets/Pack/ui/CellTable/CellTable.tsx";
 import { usePackDraftContext } from "@/widgets/Pack/model/PackDraftContext.tsx";
+import { EditableLabel } from "@/shared/ui/EditableLabel/EditableLabel.tsx";
 
 const RoundField = ( { idx } : { idx : number }) => {
   const draft = usePackDraftContext();
   const round = draft.pack.rounds[idx];
+
+  if (!round) return null;
 
   return (
       <div className={styles.field}>
@@ -16,9 +19,19 @@ const RoundField = ( { idx } : { idx : number }) => {
               {round.costs.map((cost, cIdx) => (
                 <th key={cIdx} className={styles.costTh}>
                   <div className={styles.thContent}>
-                    <span>{cost}</span>
-                    {/* это херня нужна чтобы я не забыл что нужно сделать удаление*/}
-                    {/*<span className={styles.costMark} aria-hidden="true" />*/}
+                    <EditableLabel
+                      value={String(cost)}
+                      inputType="number"
+                      renameLabel="Изменить стоимость"
+                      deleteLabel="Удалить стоимость"
+                      deleteTitle="Удалить стоимость?"
+                      deleteDescription={`Стоимость ${cost} будет удалена вместе со всеми вопросами в столбце.`}
+                      onRename={(v) => {
+                        const n = Number(v);
+                        if (Number.isFinite(n) && n > 0) draft.renameCost(cIdx, n);
+                      }}
+                      onDelete={() => draft.deleteCost(cIdx)}
+                    />
                   </div>
                 </th>
               ))}
@@ -26,7 +39,10 @@ const RoundField = ( { idx } : { idx : number }) => {
                 <AddItem
                   label="Добавить стоимость"
                   inputType="number"
-                  onSubmit={(value) => draft.addCost(Number(value))}
+                  onSubmit={(value) => {
+                    const n = Number(value);
+                    if (Number.isFinite(n) && n > 0) draft.addCost(n);
+                  }}
                 />
               </th>
             </tr>
@@ -36,9 +52,15 @@ const RoundField = ( { idx } : { idx : number }) => {
             <tr key={row}>
               <td className={styles.catTd}>
                 <div className={styles.tdContent}>
-                  {/* это херня нужна чтобы я не забыл что нужно сделать удаление*/}
-                  {/*<span className={styles.handle} aria-hidden="true">⠿</span>*/}
-                  <span className={styles.catName}>{category}</span>
+                  <EditableLabel
+                    value={category}
+                    renameLabel="Переименовать категорию"
+                    deleteLabel="Удалить категорию"
+                    deleteTitle="Удалить категорию?"
+                    deleteDescription={`Категория «${category}» будет удалена вместе со всеми вопросами.`}
+                    onRename={(name) => draft.renameCategory(row, name)}
+                    onDelete={() => draft.deleteCategory(row)}
+                  />
                 </div>
               </td>
 
@@ -46,10 +68,14 @@ const RoundField = ( { idx } : { idx : number }) => {
                 return (
                   <td key={col} className={styles.cellTd}>
                     <CellTable
+                      row={row}
+                      col={col}
                       cell={draft.pack.rounds[idx].questions[row]?.[col] ?? null}
                       cost={cost}
                       category={category}
                       onCellDrop={(cell) => draft.setCell(row, col, cell)}
+                      onCellMove={(from, to) => draft.moveCell(from, to)}
+                      onCellClear={() => draft.clearCell(row, col)}
                     />
                   </td>
                 );

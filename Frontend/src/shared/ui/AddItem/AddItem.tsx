@@ -1,5 +1,6 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import styles from './AddItem.module.css';
+import { InlineInput } from "@/shared/ui/InlineInput/InlineInput.tsx";
 
 interface AddItemProps {
   label: string;
@@ -9,23 +10,6 @@ interface AddItemProps {
 
 export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState('');
-
-  const close = () => {
-    setIsEditing(false);
-    setValue('');
-  };
-
-  const submit = () => {
-    const trimmed = value.trim();
-    if (trimmed) onSubmit(trimmed);
-    close();
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') submit();
-    if (e.key === 'Escape') close();
-  };
 
   if (!isEditing) {
     return (
@@ -47,16 +31,12 @@ export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) =
   }
 
   return (
-    <input
-      autoFocus
+    <InlineInput
+      label={label}
       className={styles.input}
-      type={inputType}
-      value={value}
-      placeholder={label}
-      aria-label={label}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={close}
+      inputType={inputType}
+      onSubmit={(v) => { onSubmit(v); setIsEditing(false); }}
+      onCancel={() => setIsEditing(false)}
     />
   );
 };

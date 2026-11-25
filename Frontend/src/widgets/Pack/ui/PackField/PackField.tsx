@@ -6,10 +6,13 @@ import { usePackDraftContext } from "@/widgets/Pack/model/PackDraftContext.tsx";
 import clsx from "clsx";
 import { useState } from "react";
 import { packSchema, useUpsertPack } from "@/features/pack";
+import { DeleteButton } from "@/features/pack/ui/DeleteButton/DeleteButton.tsx";
+import { InlineInput } from "@/shared/ui/InlineInput/InlineInput.tsx";
 
 const PackField = () => {
   const draft  = usePackDraftContext();
   const [error, setError] = useState('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   // Временно, потом будут норм ошибки
   console.log(error)
 
@@ -33,16 +36,46 @@ const PackField = () => {
           <div className={styles.roundSwitcher}>
               {draft.pack.rounds.map((round, index) => {
                 const isActive = index === draft.roundIndex;
-                return (<button
-                  key={index}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  className={clsx(styles.roundTab, isActive && styles.roundTabActive)}
-                  onClick={() => draft.setRoundIndex(index)}
-                >
-                  {round.name}
-                </button>)
+                const isEditing = index === editingIndex;
+                return (
+                  <div>
+                    {isEditing ? (
+                      <InlineInput
+                        label="Название раунда"
+                        className={styles.input}
+                        initialValue={round.name}
+                        commitOnBlur
+                        onSubmit={(name) => {
+                          draft.renameRound(index, name);
+                          setEditingIndex(null);
+                        }}
+                        onCancel={() => setEditingIndex(null)}
+                      />
+                    ) : (
+                      <div className={clsx(styles.roundTab, isActive && styles.roundTabActive)}>
+                        <img src="/Edit.svg" alt="Переименовать раунд" onClick={() => setEditingIndex(index)}/>
+                        <button
+                          className={styles.roundName}
+                          key={index}
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          onClick={() => draft.setRoundIndex(index)}
+                        >
+                          {round.name}
+                        </button>
+                        <DeleteButton
+                          isRound={true}
+                          ariaLabel="Удалить раунд"
+                          title="Удалить раунд?"
+                          description={`Раунд «${round.name}» будет удалён вместе со всеми вопросами.`}
+                          onDelete={() => draft.deleteRound(index)}
+                        />
+                      </div>
+                    )}
+
+                  </div>
+                )
               })}
             <div className={styles.addRound}>
               <AddItem label={"Добавить раунд"} onSubmit={draft.addRound} />

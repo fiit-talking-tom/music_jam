@@ -24,14 +24,17 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
     <PackDraftProvider draft={draft}>
       <div className={styles.page}>
         <div className={styles.options}>
-          <input
-            value={draft.pack.name}
-            className={styles.title}
-            onChange={(e) => {
-              draft.setName(e.target.value);
-            }}
-            placeholder={"Название пака"}
-          />
+          <div className={styles.packName}>
+            <input
+              value={draft.pack.name}
+              className={styles.title}
+              onChange={(e) => {
+                draft.setName(e.target.value);
+              }}
+              placeholder={"Название пака"}
+            />
+            <img src="/Edit.svg" alt="Rename pack" />
+          </div>
           <TabsNav active={activeTab} onChange={setActiveTab} />
         </div>
         <TabContent active={activeTab} />
