@@ -41,7 +41,7 @@ const TrackPanel = ({ tracks, onAdd, onRemove } : Props) => {
   const handleDragStart = (e: React.DragEvent, track: Track) => {
     e.dataTransfer?.setData(TRACK_DND_TYPE, track.id);
     e.dataTransfer?.setData("text/plain", track.file.name);
-    e.dataTransfer!.effectAllowed = "copy";
+    e.dataTransfer!.effectAllowed = "move";
   };
 
   const isFileDrag = (e: React.DragEvent) => {
@@ -51,6 +51,9 @@ const TrackPanel = ({ tracks, onAdd, onRemove } : Props) => {
   return (
     <div
       className={`${styles.panel} ${dragOver ? styles.over : ""}`}
+      style={{
+        "--track-count": Math.min(tracks.length, 10),
+      } as React.CSSProperties}
       onDragOver={(e : React.DragEvent<HTMLDivElement>) => {
         if (!isFileDrag(e)) return;
         e.preventDefault();

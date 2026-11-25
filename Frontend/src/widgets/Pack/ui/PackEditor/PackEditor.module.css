@@ -16,6 +16,8 @@
 
 .packName {
     display: flex;
+    cursor: pointer;
+    padding: 0 var(--page-padding);
 }
 
 .title {
@@ -23,10 +25,12 @@
     width: 100%;
     box-sizing: border-box;
     padding: 2.25rem var(--page-padding);
+    padding-left: 0;
 
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     outline: none;
+    border-radius: 8px;
 
     color: #F8F8F8;
     font-family: 'Montserrat', sans-serif;

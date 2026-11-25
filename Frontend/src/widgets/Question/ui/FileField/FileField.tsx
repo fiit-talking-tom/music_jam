@@ -10,9 +10,10 @@ type FileFieldProps = {
   error?: string;
   registration: UseFormRegisterReturn;
   tracks: Track[];
+  onRemove?: (id: string) => void;
 };
 
-const FileField = ({ id, label, error, registration, tracks }: FileFieldProps) => {
+const FileField = ({ id, label, error, registration, tracks, onRemove }: FileFieldProps) => {
   const [over, setOver] = useState(false);
   const [fileName, setFileName] = useState<string>();
   const fieldRef = useRef<HTMLDivElement>(null);
@@ -28,22 +29,35 @@ const FileField = ({ id, label, error, registration, tracks }: FileFieldProps) =
   const accepts = (e: React.DragEvent) =>
     e.dataTransfer.types.includes(TRACK_DND_TYPE) || e.dataTransfer.types.includes("Files");
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (!accepts(e)) return;
+
     e.preventDefault();
     setOver(false);
+
     const trackId = e.dataTransfer.getData(TRACK_DND_TYPE);
+
     const file = trackId
       ? tracks.find((t) => t.id === trackId)?.file
       : e.dataTransfer.files[0];
+
     if (!file || !file.type.startsWith("audio/")) return;
-    const input = e.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
+
+    const input = e.currentTarget.querySelector<HTMLInputElement>(
+      'input[type="file"]'
+    );
+
     if (!input) return;
 
     const dt = new DataTransfer();
     dt.items.add(file);
+
     input.files = dt.files;
     input.dispatchEvent(new Event("change", { bubbles: true }));
+
+    if (trackId) {
+      onRemove?.(trackId);
+    }
   };
 
   return (
@@ -52,10 +66,9 @@ const FileField = ({ id, label, error, registration, tracks }: FileFieldProps) =
         ref={fieldRef}
         className={`${styles.field} ${over ? styles.fieldOver : ""}`}
         onDragOver={(e) => {
-          console.log("ЕБАЛ", e.dataTransfer.types)
           if (!accepts(e)) return;
           e.preventDefault();
-          e.dataTransfer.dropEffect = "copy";
+          e.dataTransfer.dropEffect = "move";
           setOver(true);
         }}
         onDragLeave={(e) => {

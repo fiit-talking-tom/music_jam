@@ -12,9 +12,13 @@
     align-items: center;
     gap: 0.85rem;
     background: #232327;
-    box-shadow: 0 0 0.48rem #f8f8f8;
     border-radius: 2.1rem;
     color: #f8f8f8;
+    transition: box-shadow 0.2s ease;
+}
+
+.search:focus-within {
+    box-shadow: 0 0 0.48rem #f8f8f8;
 }
 
 .searchInput {
@@ -63,7 +67,7 @@
 
 .list {
     direction: ltr;
-    padding-left: 1.8rem;
+    padding-left: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.625rem;

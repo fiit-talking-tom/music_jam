@@ -81,6 +81,18 @@
     font-family: "Montserrat", sans-serif;
     cursor: pointer;
 }
+
+.add img {
+    width: clamp(
+            2rem,
+            calc(5rem - var(--track-count) * 0.25rem),
+            5rem
+    );
+    height: auto;
+    flex: 0 0 auto;
+    transition: width 0.2s ease;
+}
+
 .addIcon { width: 1.875rem; height: 1.875rem; flex: 0 0 auto; }
 .addText { font-size: 0.875rem; font-weight: 400; text-align: center; }
 
@@ -90,3 +102,6 @@
 }
 .panel:not(:has(.list)) .addIcon { width: clamp(3.5rem, 5vw, 5rem); height: clamp(3.5rem, 5vw, 5rem); }
 .panel:not(:has(.list)) .addText { font-size: clamp(1.125rem, 1.7vw, 1.5rem); }
+.panel:not(:has(.list)) .add img {
+    width: clamp(3.5rem, 5vw, 5rem);
+}

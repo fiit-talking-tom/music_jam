@@ -14,9 +14,10 @@ type QuestionFormProps = {
   question?: QuestionDtoCard;
   onSuccess?: () => void;
   tracks?: Track[];
+  onRemove?: (id: string) => void;
 }
 
-export const QuestionForm = ( { question, onSuccess, tracks = [] } : QuestionFormProps) => {
+export const QuestionForm = ( { question, onSuccess, tracks = [], onRemove } : QuestionFormProps) => {
   const isEdit = !!question;
   const { register, handleSubmit, reset, formState : { errors } } = useForm<QuestionFormValues>({
     resolver: zodResolver(getQuestionSchema(isEdit)),
@@ -52,17 +53,19 @@ export const QuestionForm = ( { question, onSuccess, tracks = [] } : QuestionFor
         <div className={styles.fields}>
           <FileField
             id="q-track"
-            label="Трек вопроса"
+            label="Трек вопроса 📁"
             registration={register("questionTrack")}
             error={errors.questionTrack?.message as string | undefined}
             tracks={tracks}
+            onRemove={onRemove}
           />
           <FileField
             id="a-track"
-            label="Трек ответа"
+            label="Трек ответа 📁"
             registration={register("answerTrack")}
             error={errors.answerTrack?.message as string | undefined}
             tracks={tracks}
+            onRemove={onRemove}
           />
 
           <div>

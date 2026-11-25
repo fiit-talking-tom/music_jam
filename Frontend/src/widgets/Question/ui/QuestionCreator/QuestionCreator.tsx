@@ -12,7 +12,7 @@ const QuestionCreator = () => {
     <div className={styles.createForm}>
       <section className={styles.column}>
         <div className={styles.name}>Создание вопроса</div>
-        <QuestionForm tracks={tracks.items}/>
+        <QuestionForm tracks={tracks.items} onRemove={tracks.remove}/>
       </section>
       <section className={`${styles.column} ${styles.dropColumn}`}>
         <TrackPanel tracks={tracks.items} onAdd={tracks.add} onRemove={tracks.remove} />

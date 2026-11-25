@@ -12,6 +12,8 @@ const PackQuestionsSection = () => {
   const filtered = q
     ? items.filter((item) => (item.correctAnswer ?? "").toLowerCase().includes(q))
     : items;
+  const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
+
   return (
     <section className={styles.section} aria-label="Созданные вопросы">
       <label className={styles.search}>
@@ -28,17 +30,23 @@ const PackQuestionsSection = () => {
         </svg>
       </label>
 
-      <div className={styles.scroll}>
+      {/*<div className={styles.scroll}>*/}
         <div className={styles.list}>
           {filtered.map((question) => (
             <QuestionCard
               key={question.questionId}
               question={question}
+              isOpen={openQuestionId === question.questionId}
+              onToggle={() => setOpenQuestionId(
+                openQuestionId === question.questionId
+                  ? null
+                  : question.questionId
+              )}
               actions={<EditQuestionButton question={question} />}
             />
           ))}
         </div>
-      </div>
+      {/*</div>*/}
     </section>
   );
 };

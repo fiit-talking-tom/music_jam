@@ -18,7 +18,7 @@
     box-sizing: border-box;
     flex: 0 0 30rem;
     max-width: 40%;
-    padding: 0 3.125rem;
+    padding: 0 2rem;
     border-right: 0.05rem solid rgba(186, 185, 214, 0.8);
 }
 

@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import styles from "./QuestionCard.module.css"
 import type { DragEvent } from 'react';
 import type { QuestionDtoCard } from "@/entities/question";
@@ -8,11 +8,12 @@ import clsx from "clsx";
 
 type QuestionItemProps = {
   question: QuestionDtoCard;
+  isOpen: boolean;
+  onToggle: () => void;
   actions?: ReactNode;
 }
 
-export const QuestionCard = ({ question, actions } : QuestionItemProps) => {
-  const [open, setOpen] = useState(false);
+export const QuestionCard = ({ question, isOpen, onToggle, actions } : QuestionItemProps) => {
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData(
       "application/json", JSON.stringify(question));
@@ -21,7 +22,7 @@ export const QuestionCard = ({ question, actions } : QuestionItemProps) => {
 
   return (
     <div
-      className={clsx(styles.questionItem, open && styles.open)}
+      className={clsx(styles.questionItem, isOpen && styles.open)}
       draggable
       onDragStart={handleDragStart}
     >
@@ -31,10 +32,10 @@ export const QuestionCard = ({ question, actions } : QuestionItemProps) => {
         </div>
         <button
           type="button"
-          className={clsx(styles.toggle, open && styles.toggleOpen)}
-          aria-expanded={open}
-          aria-label={open ? "Свернуть" : "Развернуть"}
-          onClick={() => setOpen((v) => !v)}
+          className={clsx(styles.toggle, isOpen && styles.toggleOpen)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Свернуть" : "Развернуть"}
+          onClick={onToggle}
         >
           <svg viewBox="0 0 20 12" fill="none" aria-hidden="true">
             <path
@@ -47,11 +48,28 @@ export const QuestionCard = ({ question, actions } : QuestionItemProps) => {
           </svg>
         </button>
       </div>
-      {open && (
+      {isOpen && (
         <div className={styles.body}>
-          <SongPlayer title="Вопрос" songUrl={getQuestionSongUrl(question.questionId)} />
-          <SongPlayer title="Ответ" songUrl={getAnswerSongUrl(question.questionId)} />
-          {actions}
+          <div className={styles.players}>
+            <SongPlayer title="Вопрос" songUrl={getQuestionSongUrl(question.questionId)} />
+            <SongPlayer title="Ответ" songUrl={getAnswerSongUrl(question.questionId)} />
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>Что нужно назвать</span>
+            <div className={styles.fieldBox}>
+              <span className={styles.fieldValue}>{question.requested}</span>
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>Правильный ответ</span>
+            <div className={clsx(styles.fieldBox, styles.fieldBoxCorrect)}>
+              <span className={styles.fieldValue}>{question.correctAnswer}</span>
+            </div>
+          </div>
+
+          {actions && <div className={styles.actions}>{actions}</div>}
         </div>
       )}
     </div>

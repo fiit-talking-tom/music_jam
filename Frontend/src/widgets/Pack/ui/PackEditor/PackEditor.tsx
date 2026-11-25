@@ -25,6 +25,8 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
       <div className={styles.page}>
         <div className={styles.options}>
           <div className={styles.packName}>
+            {/*Я не придумал ниче лучше*/}
+            <img src="/Edit.svg" alt="Rename pack" />
             <input
               value={draft.pack.name}
               className={styles.title}
@@ -33,7 +35,6 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
               }}
               placeholder={"Название пака"}
             />
-            <img src="/Edit.svg" alt="Rename pack" />
           </div>
           <TabsNav active={activeTab} onChange={setActiveTab} />
         </div>

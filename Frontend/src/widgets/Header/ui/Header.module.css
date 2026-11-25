@@ -1,6 +1,7 @@
 .headerTop {
     width: 100%;
     padding: 1.25rem var(--page-padding);
+    padding-bottom: 0;
     flex-shrink: 0;
     background-color: var(--color-bg);
 }
