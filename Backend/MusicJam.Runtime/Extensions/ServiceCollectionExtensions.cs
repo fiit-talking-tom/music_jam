@@ -61,6 +61,8 @@ public static class ServiceCollectionExtensions
             })
             .WithMetrics(metrics => metrics
                 .AddPrometheusExporter()
+                .AddProcessInstrumentation()
+                .AddRuntimeInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation());
         return services;
