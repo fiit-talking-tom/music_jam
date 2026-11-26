@@ -44,6 +44,8 @@ services:
     environment:
       GF_SERVER_ROOT_URL: "https://test.musicjam.fun:3000/"
 
+  
+
 volumes:
   certbot_www:
   certbot_certs:

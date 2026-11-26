@@ -76,9 +76,7 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddHubOptions(this IServiceCollection services)
     {
-        services.AddSingleton<HubTracingFilter>();
-        services.AddSignalR(options =>
-                options.AddFilter<HubTracingFilter>())
+        services.AddSignalR()
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
         return services;

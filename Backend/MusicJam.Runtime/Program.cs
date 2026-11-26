@@ -29,6 +29,11 @@ public static class Program
     {
         return Host
             .CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webHostBuilder => { webHostBuilder.UseStartup<Startup>(); });
+            .ConfigureWebHostDefaults(webHostBuilder => { webHostBuilder.UseStartup<Startup>(); })
+            .ConfigureLogging(logging =>
+            {
+                logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+                logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
+            });
     }
 }
