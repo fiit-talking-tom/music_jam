@@ -16,6 +16,7 @@ using MusicJam.Runtime.Storages.InvitesStorage;
 using MusicJam.Studio.Constants;
 using Shared;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Runtime;
 
@@ -75,6 +76,8 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IUsersService, UsersService>();
         services.AddScoped<IInvitesService, InvitesService>();
         services.Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
+
+        services.AddScoped<IApiErrorFactory, ApiErrorFactory>();
 
         services.AddHttpContextAccessor();
         services.AddTransient<ForwardAccessTokenHandler>();

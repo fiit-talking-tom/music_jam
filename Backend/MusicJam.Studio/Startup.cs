@@ -23,7 +23,8 @@ public class Startup(IConfiguration configuration)
             .ConfigureSettings(configuration)
             .AddObjectStorage()
             .AddServices()
-            .AddStorages();
+            .AddStorages()
+            .AddFactories();
 
         services.AddControllers(options =>
         {

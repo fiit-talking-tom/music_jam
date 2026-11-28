@@ -12,6 +12,7 @@ using MusicJam.Studio.Storages.RoundStorage;
 using MusicJam.Studio.Storages.TrackStorage;
 using MusicJam.Studio.Storages.UsersStorage;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Studio.Extensions;
 
@@ -38,6 +39,13 @@ public static class ServiceCollectionExtensions
             .AddScoped<IQuestionStorage, QuestionStorage>()
             .AddScoped<IRoundStorage, RoundStorage>()
             .AddScoped<IPackStorage, PackStorage>();
+        return services;
+    }
+
+    public static IServiceCollection AddFactories(this IServiceCollection services)
+    {
+        services
+            .AddScoped<IApiErrorFactory, ApiErrorFactory>();
         return services;
     }
 
