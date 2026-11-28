@@ -32,7 +32,7 @@ internal class AuthService(
         }
 
         // todo написать тесты для этого случая
-        if (!IsStrongPassword(request.Password))
+        if (!PasswordHelper.IsStrongPassword(request.Password))
         {
             return IAuthService.AuthError.WeakPassword;
         }
@@ -43,11 +43,5 @@ internal class AuthService(
         var saved = await userStorage.SaveUser(user);
 
         return tokenService.GenerateToken(saved);
-    }
-
-    private static bool IsStrongPassword(string password)
-    {
-        // todo реализовать логику по проверке силы пароля: какие символы используются, длина, частые паттерны и пр.
-        return true;
     }
 }
