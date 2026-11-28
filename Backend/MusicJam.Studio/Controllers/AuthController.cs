@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MusicJam.Studio.Constants;
 using MusicJam.Studio.Extensions;
-using MusicJam.Studio.Requests;
 using MusicJam.Studio.Requests.Auth;
 using MusicJam.Studio.Services.AuthService;
 
@@ -48,6 +47,17 @@ public class AuthController(IAuthService authService) : ControllerBase
         Response.SetAccessTokenCookie(token);
 
         return Created();
+    }
+
+    [HttpPost("logout")]
+    [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public ActionResult Logout()
+    {
+        Response.RemoveAccessTokenCookie();
+
+        return Ok();
     }
 
     [HttpGet("me")]
