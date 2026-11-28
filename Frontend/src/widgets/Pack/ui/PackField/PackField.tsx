@@ -30,7 +30,7 @@ const PackField = () => {
     <>
       <div className={styles.page}>
         <div className={styles.questionSection}>
-          <PackQuestionsSection />
+          <PackQuestionsSection scrollSide={'left'} />
         </div>
         <div className={styles.round}>
           <div className={styles.roundSwitcher}>
@@ -52,11 +52,13 @@ const PackField = () => {
                         onCancel={() => setEditingIndex(null)}
                       />
                     ) : (
-                      <div className={clsx(styles.roundTab, isActive && styles.roundTabActive)}>
+                      <div
+                        key={index}
+                        className={clsx(styles.roundTab, isActive && styles.roundTabActive)}
+                      >
                         <img src="/Edit.svg" alt="Переименовать раунд" onClick={() => setEditingIndex(index)}/>
                         <button
                           className={styles.roundName}
-                          key={index}
                           type="button"
                           role="tab"
                           aria-selected={isActive}
@@ -78,7 +80,11 @@ const PackField = () => {
                 )
               })}
             <div className={styles.addRound}>
-              <AddItem label={"Добавить раунд"} onSubmit={draft.addRound} />
+              <AddItem
+                label={"Добавить раунд"}
+                onSubmit={draft.addRound}
+                className={styles.inputRound}
+              />
             </div>
           </div>
           <RoundField idx={draft.roundIndex}/>

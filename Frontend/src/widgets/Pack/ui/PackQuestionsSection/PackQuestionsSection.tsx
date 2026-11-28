@@ -3,8 +3,17 @@ import { useQuestions } from "@/entities/question";
 import { QuestionCard } from "@/entities/question";
 import { EditQuestionButton } from "@/features/question/ui/EditQuestionButton/EditQuestionButton.tsx";
 import { useState } from "react";
+import clsx from "clsx";
 
-const PackQuestionsSection = () => {
+type PackQuestionsSectionProps = {
+  scrollSide?: "left" | "right";
+  className?: string;
+};
+
+const PackQuestionsSection = ({
+  scrollSide = "left",
+  className,
+}: PackQuestionsSectionProps) => {
   const { data } = useQuestions();
   const [query, setQuery] = useState("");
   const items = data?.pages.flat() ?? [];
@@ -15,7 +24,7 @@ const PackQuestionsSection = () => {
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
 
   return (
-    <section className={styles.section} aria-label="Созданные вопросы">
+    <section className={clsx(styles.section, className)} aria-label="Созданные вопросы">
       <label className={styles.search}>
         <input
           className={styles.searchInput}
@@ -30,7 +39,12 @@ const PackQuestionsSection = () => {
         </svg>
       </label>
 
-      {/*<div className={styles.scroll}>*/}
+      <div
+        className={clsx(
+          styles.scroll,
+          scrollSide === "left" ? styles.scrollLeft : styles.scrollRight
+        )}
+      >
         <div className={styles.list}>
           {filtered.map((question) => (
             <QuestionCard
@@ -46,7 +60,7 @@ const PackQuestionsSection = () => {
             />
           ))}
         </div>
-      {/*</div>*/}
+      </div>
     </section>
   );
 };

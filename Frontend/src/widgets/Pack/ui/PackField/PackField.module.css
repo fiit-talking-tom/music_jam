@@ -167,5 +167,12 @@
 }
 
 .input {
+    font-size: 1.25rem;
+    min-height: 3.5rem;
+    min-width: 15rem;
+}
+
+.inputRound {
+    font-size: 1.25rem;
     min-height: 3.5rem;
 }

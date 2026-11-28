@@ -30,6 +30,7 @@ export const EditableLabel = ({
     return (
       <div className={styles.edit}>
         <InlineInput
+          className={styles.input}
           label={renameLabel}
           inputType={inputType}
           initialValue={value}

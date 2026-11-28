@@ -18,7 +18,7 @@ const QuestionCreator = () => {
         <TrackPanel tracks={tracks.items} onAdd={tracks.add} onRemove={tracks.remove} />
       </section>
       <section className={styles.column}>
-        <PackQuestionsSection />
+        <PackQuestionsSection scrollSide={'right'} />
       </section>
     </div>
   );

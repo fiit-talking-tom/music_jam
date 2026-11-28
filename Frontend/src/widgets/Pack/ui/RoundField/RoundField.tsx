@@ -43,6 +43,7 @@ const RoundField = ( { idx } : { idx : number }) => {
                     const n = Number(value);
                     if (Number.isFinite(n) && n > 0) draft.addCost(n);
                   }}
+                  className={styles.inputCost}
                 />
               </th>
             </tr>
@@ -84,7 +85,11 @@ const RoundField = ( { idx } : { idx : number }) => {
           ))}
           <tr>
             <td className={styles.addTd}>
-              <AddItem label="Добавить категорию" onSubmit={draft.addCategory} />
+              <AddItem
+                label="Добавить категорию"
+                onSubmit={draft.addCategory}
+                className={styles.inputCategory}
+              />
             </td>
           </tr>
           </tbody>

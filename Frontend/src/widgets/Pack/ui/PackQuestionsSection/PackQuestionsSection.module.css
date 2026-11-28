@@ -1,7 +1,8 @@
 .section {
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 1.5rem;
+    max-height: 30.75rem;
 }
 
 .search {
@@ -43,11 +44,10 @@
 }
 
 .scroll {
-    max-height: 24.3rem;
+    max-height: 26.35rem;
     overflow-y: auto;
-    direction: rtl;
     scrollbar-width: thin;
-    scrollbar-color: #232327 #bab9d6;
+    scrollbar-color: #bab9d6 transparent;
 }
 
 .scroll::-webkit-scrollbar {
@@ -65,9 +65,13 @@
     border-radius: 1rem;
 }
 
+.scrollLeft {
+    direction: rtl;
+}
+
 .list {
     direction: ltr;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.625rem;

@@ -11,6 +11,7 @@
 .name {
     grid-column: 2;
     text-align: center;
+    font-size: 1.2rem;
     white-space: nowrap;
     cursor: pointer;
 }
@@ -27,6 +28,11 @@
     flex-shrink: 0;
 }
 
+.input {
+    min-height: 4rem;
+    font-size: 1.615rem;
+}
+
 .root:hover .actions,
 .root:focus-within .actions {
     opacity: 1;
@@ -38,7 +44,7 @@
 
 .edit {
     width: 100%;
-    height: 2.5rem;
+    /*height: 2.5rem;*/
 }
 
 input[type="number"]::-webkit-outer-spin-button,

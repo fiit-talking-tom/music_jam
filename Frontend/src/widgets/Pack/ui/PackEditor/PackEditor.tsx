@@ -26,7 +26,6 @@ export const PackEditorForm = ({ packId, initial }: { packId: string; initial?: 
         <div className={styles.options}>
           <div className={styles.packName}>
             {/*Я не придумал ниче лучше*/}
-            <img src="/Edit.svg" alt="Rename pack" />
             <input
               value={draft.pack.name}
               className={styles.title}

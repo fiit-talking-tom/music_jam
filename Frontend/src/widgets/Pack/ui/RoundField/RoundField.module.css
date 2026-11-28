@@ -82,3 +82,13 @@
 .addTd {
     vertical-align: middle;
 }
+
+.inputCost {
+    min-height: 4.0625rem;
+    font-size: 1.615rem;
+}
+
+.inputCategory {
+    min-height: 4.0625rem;
+    font-size: 1.2rem;
+}

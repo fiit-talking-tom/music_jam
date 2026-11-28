@@ -18,14 +18,13 @@
     display: flex;
     cursor: pointer;
     padding: 0 var(--page-padding);
+    margin: 1rem 0 1rem 0;
 }
 
 .title {
     align-self: stretch;
     width: 100%;
     box-sizing: border-box;
-    padding: 2.25rem var(--page-padding);
-    padding-left: 0;
 
     background: transparent;
     border: 1px solid transparent;

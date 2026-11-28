@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import styles from './AddItem.module.css';
 import { InlineInput } from "@/shared/ui/InlineInput/InlineInput.tsx";
+import clsx from "clsx";
 
 interface AddItemProps {
   label: string;
   inputType?: 'text' | 'number';
   onSubmit: (value: string) => void;
+  className?: string;
 }
 
-export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) => {
+export const AddItem = ({ label, inputType = 'text', onSubmit, className }: AddItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   if (!isEditing) {
@@ -33,7 +35,7 @@ export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) =
   return (
     <InlineInput
       label={label}
-      className={styles.input}
+      className={clsx(styles.input, className)}
       inputType={inputType}
       onSubmit={(v) => { onSubmit(v); setIsEditing(false); }}
       onCancel={() => setIsEditing(false)}
