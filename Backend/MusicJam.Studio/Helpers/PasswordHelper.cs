@@ -5,7 +5,7 @@ namespace MusicJam.Studio.Helpers;
 
 internal static class PasswordHelper
 {
-    private const int MinPasswordStrength = 3; // из 4 
+    private const int MinPasswordStrength = 2; // из 4 
 
     private static readonly PasswordHasher<object> Hasher = new();
 
