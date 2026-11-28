@@ -6,8 +6,6 @@ services:
   musicjam-gateway:
     ports:
       - "5000:8080"
-    volumes:
-      - ./Frontend/dist:/app/wwwroot
       
   musicjam-runtime:
     environment:
