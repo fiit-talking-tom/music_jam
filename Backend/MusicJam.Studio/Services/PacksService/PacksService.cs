@@ -70,6 +70,11 @@ public class PacksService(
 
     public async Task<Result<Pack, IPacksService.PackError>> Create(Guid userId, CreatePackRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return IPacksService.PackError.EmptyPackName;
+        }
+
         var roundsResult = await GetAllRounds(userId, request);
         if (roundsResult.TryGetFault(out var error, out var rounds))
         {
@@ -88,6 +93,11 @@ public class PacksService(
 
     public async Task<Result<Pack, IPacksService.PackError>> Update(Guid userId, Guid packId, UpdatePackRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return IPacksService.PackError.EmptyPackName;
+        }
+
         var roundsResult = await GetAllRounds(userId, request);
         if (roundsResult.TryGetFault(out var error, out var rounds))
         {
@@ -115,12 +125,17 @@ public class PacksService(
     private async Task<Result<List<Round>, IPacksService.PackError>> GetAllRounds(Guid userId, CreatePackRequest request)
     {
         if (request.Rounds.Any(HasDuplicateCells))
+        {
             return IPacksService.PackError.DuplicateCell;
+        }
 
         var questionIds = CollectQuestionIds(request.Rounds);
         var questions = await questionStorage.GetQuestions(userId, questionIds);
+
         if (questions.Count != questionIds.Count)
+        {
             return IPacksService.PackError.QuestionNotFound;
+        }
 
         return request.Rounds
             .Select(r => BuildRound(r, questions))

@@ -7,7 +7,7 @@ public class CreatePackRequest
     [Required]
     public Guid PackId { get; set; }
 
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; }
 
     public List<string> Categories { get; set; } = [];
 

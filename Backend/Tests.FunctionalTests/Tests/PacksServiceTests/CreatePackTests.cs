@@ -1,4 +1,5 @@
 ﻿using MusicJam.Studio.Requests.Packs;
+using MusicJam.Studio.Services.PacksService;
 using Shouldly;
 using Tests.FunctionalTests.Fixtures;
 
@@ -109,5 +110,22 @@ public sealed class CreatePackTests(TestApplicationFixture fixture) : PacksServi
         round.Categories.Count.ShouldBe(2);
         round.Categories.ShouldContain("Category 1");
         round.Categories.ShouldContain("Category 2");
+    }
+    
+    [Fact]
+    public async Task Create_WhenEmptyPackName_ReturnsEmptyPackName()
+    {
+        var user = await CreateUserAsync();
+        var request = BuildCreatePackRequest();
+        request.Name = "";
+
+        var result = await PacksService.Create(user.Id, request);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.GetFaultOrThrow().ShouldBe(IPacksService.PackError.EmptyPackName);
+
+        var getPackResult = await PacksService.GetPack(user.Id, request.PackId);
+        getPackResult.IsSuccess.ShouldBeFalse();
+        getPackResult.GetFaultOrThrow().ShouldBe(IPacksService.PackError.NotFound);
     }
 }

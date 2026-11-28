@@ -8,6 +8,7 @@ using MusicJam.Studio.Responses;
 using MusicJam.Studio.Responses.Packs;
 using MusicJam.Studio.Services.PacksService;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Studio.Controllers;
 
@@ -15,7 +16,7 @@ namespace MusicJam.Studio.Controllers;
 [Route("api/packs")]
 [Produces("application/json")]
 [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
-public class PacksController(IPacksService packsService) : ControllerBase
+public class PacksController(IPacksService packsService, IApiErrorFactory apiErrorFactory) : ControllerBase
 {
     [HttpGet("short")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -125,12 +126,11 @@ public class PacksController(IPacksService packsService) : ControllerBase
     {
         return error switch
         {
-            IPacksService.PackError.NotFound => NotFound(),
-            IPacksService.PackError.InvalidRequest => BadRequest(),
-            IPacksService.PackError.DuplicateCell => BadRequest(),
-            IPacksService.PackError.QuestionNotFound => BadRequest(),
-            IPacksService.PackError.UnexpectedError => StatusCode(StatusCodes.Status500InternalServerError),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IPacksService.PackError.NotFound => apiErrorFactory.NotFound(nameof(error)),
+            IPacksService.PackError.DuplicateCell => apiErrorFactory.BadRequest(nameof(error)),
+            IPacksService.PackError.QuestionNotFound => apiErrorFactory.BadRequest(nameof(error)),
+            IPacksService.PackError.EmptyPackName => apiErrorFactory.BadRequest(nameof(error)),
+            _ => apiErrorFactory.ServerError(nameof(error))
         };
     }
 }

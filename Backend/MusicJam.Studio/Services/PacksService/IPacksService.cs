@@ -10,10 +10,9 @@ public interface IPacksService
     public enum PackError
     {
         NotFound,
-        InvalidRequest,
-        UnexpectedError,
         QuestionNotFound,
-        DuplicateCell
+        DuplicateCell,
+        EmptyPackName
     }
 
     Task<Result<ShortPackResponse[], PackError>> GetShortPacks(Guid userId, GetPackRequest query);
