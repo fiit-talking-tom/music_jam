@@ -6,6 +6,8 @@ export type PackShort = {
 export type PackCardDto = PackShort & {
   createdAtUtc : string;
   updatedAtUtc : string;
+  roundCount : number;
+  totalQuestionCount : number;
   // usages : PackShort[]
 }
 

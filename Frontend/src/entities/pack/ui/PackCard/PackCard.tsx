@@ -34,12 +34,12 @@ export const PackCard = ({ pack, onClick, deleteButton, startButton }: PackCardP
       </div>
       <div className={styles.stats}>
         <span>
-          <b className={styles.accent}>{1}</b>{" "}
-          {plural(1, "тур", "тура", "туров")}
+          <b className={styles.accent}>{pack.roundCount}</b>{" "}
+          {plural(pack.roundCount, "тур", "тура", "туров")}
         </span>
         <span>
-          <b className={styles.accent}>{0}</b>{" "}
-          {plural(0, "вопрос", "вопроса", "вопросов")}
+          <b className={styles.accent}>{pack.totalQuestionCount}</b>{" "}
+          {plural(pack.totalQuestionCount, "вопрос", "вопроса", "вопросов")}
         </span>
       </div>
       <div className={styles.dates}>
