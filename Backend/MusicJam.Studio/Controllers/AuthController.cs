@@ -53,6 +53,17 @@ public class AuthController(
         return Created();
     }
 
+    [HttpPost("logout")]
+    [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public ActionResult Logout()
+    {
+        Response.RemoveAccessTokenCookie();
+
+        return Ok();
+    }
+
     [HttpGet("me")]
     [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
     [ProducesResponseType(StatusCodes.Status200OK)]
