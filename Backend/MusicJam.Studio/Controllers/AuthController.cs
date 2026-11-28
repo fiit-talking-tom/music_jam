@@ -66,7 +66,7 @@ public class AuthController(IAuthService authService, IApiErrorFactory apiErrorF
             IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(nameof(error)),
             IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(nameof(error)),
             IAuthService.AuthError.SameEmailAlreadyExists => apiErrorFactory.Conflict(nameof(error)),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            _ => apiErrorFactory.ServerError(nameof(error))
         };
     }
 }
