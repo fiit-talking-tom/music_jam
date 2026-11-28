@@ -1,13 +1,16 @@
-﻿namespace Shared.Errors;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Shared.Errors;
 
 public interface IApiErrorFactory
 {
     ApiErrorResponse Create(int statusCode, string message);
+    ActionResult Result(int statusCode, string message);
 
-    ApiErrorResponse BadRequest(string message);
-    ApiErrorResponse Unauthorized(string message);
-    ApiErrorResponse Forbidden(string message);
-    ApiErrorResponse NotFound(string message);
-    ApiErrorResponse Conflict(string message);
-    ApiErrorResponse ServerError(string message);
+    ActionResult BadRequest(string message);
+    ActionResult Unauthorized(string message);
+    ActionResult Forbidden(string message);
+    ActionResult NotFound(string message);
+    ActionResult Conflict(string message);
+    ActionResult ServerError(string message);
 }

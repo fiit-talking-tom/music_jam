@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Shared.Errors;
 
@@ -15,17 +16,26 @@ public class ApiErrorFactory(IHttpContextAccessor httpContextAccessor) : IApiErr
         };
     }
 
-    public ApiErrorResponse BadRequest(string message) => Create(StatusCodes.Status400BadRequest, message);
+    public ActionResult Result(int statusCode, string message)
+    {
+        var error = Create(statusCode, message);
+        return new ObjectResult(error)
+        {
+            StatusCode = statusCode
+        };
+    }
 
-    public ApiErrorResponse Unauthorized(string message) => Create(StatusCodes.Status401Unauthorized, message);
+    public ActionResult BadRequest(string message) => Result(StatusCodes.Status400BadRequest, message);
 
-    public ApiErrorResponse Forbidden(string message) => Create(StatusCodes.Status403Forbidden, message);
+    public ActionResult Unauthorized(string message) => Result(StatusCodes.Status401Unauthorized, message);
 
-    public ApiErrorResponse NotFound(string message) => Create(StatusCodes.Status404NotFound, message);
+    public ActionResult Forbidden(string message) => Result(StatusCodes.Status403Forbidden, message);
 
-    public ApiErrorResponse Conflict(string message) => Create(StatusCodes.Status409Conflict, message);
+    public ActionResult NotFound(string message) => Result(StatusCodes.Status404NotFound, message);
 
-    public ApiErrorResponse ServerError(string message) => Create(StatusCodes.Status500InternalServerError, message);
+    public ActionResult Conflict(string message) => Result(StatusCodes.Status409Conflict, message);
+
+    public ActionResult ServerError(string message) => Result(StatusCodes.Status500InternalServerError, message);
 
     private string? GetTraceId()
     {
