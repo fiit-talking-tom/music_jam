@@ -15,9 +15,14 @@ internal class AuthService(
     public async Task<Result<string, IAuthService.AuthError>> Login(LoginRequest request)
     {
         var user = await userStorage.GetUserByEmail(request.Email);
-        if (user is null || !PasswordHelper.Verify(request.Password, user.Password))
+        if (user is null)
         {
             return IAuthService.AuthError.UserNotFound;
+        }
+
+        if (!PasswordHelper.Verify(request.Password, user.Password))
+        {
+            return IAuthService.AuthError.InvalidPassword;
         }
 
         return tokenService.GenerateToken(user);

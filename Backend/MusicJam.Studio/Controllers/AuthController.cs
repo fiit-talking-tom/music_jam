@@ -78,6 +78,7 @@ public class AuthController(
         return error switch
         {
             IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(error),
+            IAuthService.AuthError.InvalidPassword => apiErrorFactory.BadRequest(error),
             IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(error),
             IAuthService.AuthError.SameEmailAlreadyExists => apiErrorFactory.Conflict(error),
             _ => apiErrorFactory.ServerError(error)
