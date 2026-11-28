@@ -4,19 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Shared.Errors;
 
-public class ApiErrorFactory(IHttpContextAccessor httpContextAccessor) : IApiErrorFactory
+public class ApiErrorFactory<TError>(IHttpContextAccessor httpContextAccessor)
+    : IApiErrorFactory<TError> where TError : Enum
 {
-    public ApiErrorResponse Create(int statusCode, string message)
+    public ApiErrorResponse Create(int statusCode, TError message)
     {
         return new ApiErrorResponse
         {
             StatusCode = statusCode,
-            Message = message,
+            Message = message.ToString(),
             TraceId = GetTraceId()
         };
     }
 
-    public ActionResult Result(int statusCode, string message)
+    public ActionResult Result(int statusCode, TError message)
     {
         var error = Create(statusCode, message);
         return new ObjectResult(error)
@@ -25,17 +26,17 @@ public class ApiErrorFactory(IHttpContextAccessor httpContextAccessor) : IApiErr
         };
     }
 
-    public ActionResult BadRequest(string message) => Result(StatusCodes.Status400BadRequest, message);
+    public ActionResult BadRequest(TError message) => Result(StatusCodes.Status400BadRequest, message);
 
-    public ActionResult Unauthorized(string message) => Result(StatusCodes.Status401Unauthorized, message);
+    public ActionResult Unauthorized(TError message) => Result(StatusCodes.Status401Unauthorized, message);
 
-    public ActionResult Forbidden(string message) => Result(StatusCodes.Status403Forbidden, message);
+    public ActionResult Forbidden(TError message) => Result(StatusCodes.Status403Forbidden, message);
 
-    public ActionResult NotFound(string message) => Result(StatusCodes.Status404NotFound, message);
+    public ActionResult NotFound(TError message) => Result(StatusCodes.Status404NotFound, message);
 
-    public ActionResult Conflict(string message) => Result(StatusCodes.Status409Conflict, message);
+    public ActionResult Conflict(TError message) => Result(StatusCodes.Status409Conflict, message);
 
-    public ActionResult ServerError(string message) => Result(StatusCodes.Status500InternalServerError, message);
+    public ActionResult ServerError(TError message) => Result(StatusCodes.Status500InternalServerError, message);
 
     private string? GetTraceId()
     {

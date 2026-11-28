@@ -79,7 +79,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IInvitesService, InvitesService>();
         services.Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
 
-        services.AddScoped<IApiErrorFactory, ApiErrorFactory>();
+        services.AddScoped(typeof(IApiErrorFactory<>), typeof(ApiErrorFactory<>));
 
         services.AddHttpContextAccessor();
         services.AddTransient<ForwardAccessTokenHandler>();

@@ -2,15 +2,15 @@
 
 namespace Shared.Errors;
 
-public interface IApiErrorFactory
+public interface IApiErrorFactory<in TError> where TError : Enum
 {
-    ApiErrorResponse Create(int statusCode, string message);
-    ActionResult Result(int statusCode, string message);
+    ApiErrorResponse Create(int statusCode, TError message);
+    ActionResult Result(int statusCode, TError message);
 
-    ActionResult BadRequest(string message);
-    ActionResult Unauthorized(string message);
-    ActionResult Forbidden(string message);
-    ActionResult NotFound(string message);
-    ActionResult Conflict(string message);
-    ActionResult ServerError(string message);
+    ActionResult BadRequest(TError message);
+    ActionResult Unauthorized(TError message);
+    ActionResult Forbidden(TError message);
+    ActionResult NotFound(TError message);
+    ActionResult Conflict(TError message);
+    ActionResult ServerError(TError message);
 }

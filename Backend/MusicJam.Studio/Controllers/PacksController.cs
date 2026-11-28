@@ -16,7 +16,10 @@ namespace MusicJam.Studio.Controllers;
 [Route("api/packs")]
 [Produces("application/json")]
 [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
-public class PacksController(IPacksService packsService, IApiErrorFactory apiErrorFactory) : ControllerBase
+public class PacksController(
+    IPacksService packsService,
+    IApiErrorFactory<IPacksService.PackError> apiErrorFactory)
+    : ControllerBase
 {
     [HttpGet("short")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -51,7 +54,7 @@ public class PacksController(IPacksService packsService, IApiErrorFactory apiErr
 
         return packs;
     }
-    
+
     [HttpGet("{packId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -124,15 +127,13 @@ public class PacksController(IPacksService packsService, IApiErrorFactory apiErr
 
     private ActionResult ErrorResponse(IPacksService.PackError error)
     {
-        var message = error.ToString();
-
         return error switch
         {
-            IPacksService.PackError.NotFound => apiErrorFactory.NotFound(message),
-            IPacksService.PackError.DuplicateCell => apiErrorFactory.BadRequest(message),
-            IPacksService.PackError.QuestionNotFound => apiErrorFactory.BadRequest(message),
-            IPacksService.PackError.EmptyPackName => apiErrorFactory.BadRequest(message),
-            _ => apiErrorFactory.ServerError(message)
+            IPacksService.PackError.NotFound => apiErrorFactory.NotFound(error),
+            IPacksService.PackError.DuplicateCell => apiErrorFactory.BadRequest(error),
+            IPacksService.PackError.QuestionNotFound => apiErrorFactory.BadRequest(error),
+            IPacksService.PackError.EmptyPackName => apiErrorFactory.BadRequest(error),
+            _ => apiErrorFactory.ServerError(error)
         };
     }
 }

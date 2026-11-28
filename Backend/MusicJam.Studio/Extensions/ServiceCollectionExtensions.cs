@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddFactories(this IServiceCollection services)
     {
         services
-            .AddScoped<IApiErrorFactory, ApiErrorFactory>();
+            .AddScoped(typeof(IApiErrorFactory<>), typeof(ApiErrorFactory<>));
         return services;
     }
 

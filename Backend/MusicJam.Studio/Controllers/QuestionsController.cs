@@ -15,7 +15,10 @@ namespace MusicJam.Studio.Controllers;
 [ApiController]
 [Route("api/questions")]
 [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
-public class QuestionsController(IQuestionsService questionsService, IApiErrorFactory apiErrorFactory) : ControllerBase
+public class QuestionsController(
+    IQuestionsService questionsService,
+    IApiErrorFactory<IQuestionsService.QuestionError> apiErrorFactory)
+    : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -159,16 +162,14 @@ public class QuestionsController(IQuestionsService questionsService, IApiErrorFa
 
     private ActionResult ErrorResponse(IQuestionsService.QuestionError error)
     {
-        var message = error.ToString();
-
         return error switch
         {
-            IQuestionsService.QuestionError.NotFound => apiErrorFactory.NotFound(message),
-            IQuestionsService.QuestionError.InvalidTrackType => apiErrorFactory.BadRequest(message),
-            IQuestionsService.QuestionError.InvalidTrack => apiErrorFactory.BadRequest(message),
-            IQuestionsService.QuestionError.CannotLoadTrack => apiErrorFactory.BadRequest(message),
-            IQuestionsService.QuestionError.InUse => apiErrorFactory.BadRequest(message),
-            _ => apiErrorFactory.ServerError(message)
+            IQuestionsService.QuestionError.NotFound => apiErrorFactory.NotFound(error),
+            IQuestionsService.QuestionError.InvalidTrackType => apiErrorFactory.BadRequest(error),
+            IQuestionsService.QuestionError.InvalidTrack => apiErrorFactory.BadRequest(error),
+            IQuestionsService.QuestionError.CannotLoadTrack => apiErrorFactory.BadRequest(error),
+            IQuestionsService.QuestionError.InUse => apiErrorFactory.BadRequest(error),
+            _ => apiErrorFactory.ServerError(error)
         };
     }
 }

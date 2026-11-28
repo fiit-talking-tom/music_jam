@@ -2,13 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using MusicJam.Runtime.Responses;
 using MusicJam.Runtime.Services.InvitesService;
+using Shared.Errors;
 
 namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [AllowAnonymous]
 [Route("api/runtime/invites")]
-public class InvitesController(IInvitesService invitesService) : ControllerBase
+public class InvitesController(
+    IInvitesService invitesService,
+    IApiErrorFactory<IInvitesService.InviteError> apiErrorFactory)
+    : ControllerBase
 {
     private const string JoinGameBaseUrl = "join-game";
     private const string JoinGameByCodeUrl = $"{JoinGameBaseUrl}/by-code";
@@ -44,9 +48,10 @@ public class InvitesController(IInvitesService invitesService) : ControllerBase
     {
         return error switch
         {
-            IInvitesService.InviteError.InviteNotFound => NotFound(),
-            IInvitesService.InviteError.InvalidCode => BadRequest(),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IInvitesService.InviteError.InviteNotFound => apiErrorFactory.NotFound(error),
+            IInvitesService.InviteError.InvalidCode => apiErrorFactory.BadRequest(error),
+            IInvitesService.InviteError.InvalidLink => apiErrorFactory.BadRequest(error),
+            _ => apiErrorFactory.ServerError(error)
         };
     }
 }
