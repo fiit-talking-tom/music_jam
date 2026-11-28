@@ -31,7 +31,6 @@ internal class AuthService(
             return IAuthService.AuthError.SameEmailAlreadyExists;
         }
 
-        // todo написать тесты для этого случая
         if (!PasswordHelper.IsStrongPassword(request.Password))
         {
             return IAuthService.AuthError.WeakPassword;

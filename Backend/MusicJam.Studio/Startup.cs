@@ -20,6 +20,7 @@ public class Startup(IConfiguration configuration)
     public void ConfigureServices(IServiceCollection services)
     {
         services
+            .AddHttpContextAccessor()
             .ConfigureSettings(configuration)
             .AddObjectStorage()
             .AddServices()

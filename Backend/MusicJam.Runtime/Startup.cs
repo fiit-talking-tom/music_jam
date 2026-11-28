@@ -26,6 +26,8 @@ public class Startup(IConfiguration configuration)
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
+
         services.AddOptions<EnvironmentSettings>().BindConfiguration(EnvironmentSettings.SectionName);
 
         var jwtSettings = new JwtSettings();
