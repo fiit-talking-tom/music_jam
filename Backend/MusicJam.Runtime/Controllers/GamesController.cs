@@ -6,12 +6,16 @@ using MusicJam.Runtime.Responses.Games;
 using MusicJam.Runtime.Services.GameService;
 using MusicJam.Studio.Constants;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [Route("/api/runtime/games")]
-public class GamesController(IGameService gameService) : ControllerBase
+public class GamesController(
+    IGameService gameService,
+    IApiErrorFactory<IGameService.GameError> apiErrorFactory)
+    : ControllerBase
 {
     [HttpPost]
     [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
@@ -65,8 +69,8 @@ public class GamesController(IGameService gameService) : ControllerBase
     {
         return error switch
         {
-            IGameService.GameError.GameNotFound => NotFound(),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IGameService.GameError.GameNotFound => apiErrorFactory.NotFound(error),
+            _ => apiErrorFactory.ServerError(error),
         };
     }
 }
