@@ -8,13 +8,14 @@ using MusicJam.Studio.Requests.Questions;
 using MusicJam.Studio.Responses.Questions;
 using MusicJam.Studio.Services.QuestionsService;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Studio.Controllers;
 
 [ApiController]
 [Route("api/questions")]
 [Authorize(AuthenticationSchemes = AuthConstants.DefaultAuthorizationScheme)]
-public class QuestionsController(IQuestionsService questionsService) : ControllerBase
+public class QuestionsController(IQuestionsService questionsService, IApiErrorFactory apiErrorFactory) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -54,7 +55,6 @@ public class QuestionsController(IQuestionsService questionsService) : Controlle
             new { questionId = question.Id },
             question);
     }
-
 
     [HttpDelete("{questionId:guid}")]
     [ProducesResponseType(typeof(Question), StatusCodes.Status204NoContent)]
@@ -110,7 +110,6 @@ public class QuestionsController(IQuestionsService questionsService) : Controlle
         return Ok(question);
     }
 
-
     [HttpGet("{questionId:guid}/answer-track")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -162,12 +161,12 @@ public class QuestionsController(IQuestionsService questionsService) : Controlle
     {
         return error switch
         {
-            IQuestionsService.QuestionError.NotFound => NotFound(),
-            IQuestionsService.QuestionError.InvalidTrackType => BadRequest(),
-            IQuestionsService.QuestionError.InvalidTrack => BadRequest(),
-            IQuestionsService.QuestionError.CannotLoadTrack => BadRequest(),
-            IQuestionsService.QuestionError.InUse => BadRequest(),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IQuestionsService.QuestionError.NotFound => apiErrorFactory.NotFound(nameof(error)),
+            IQuestionsService.QuestionError.InvalidTrackType => apiErrorFactory.BadRequest(nameof(error)),
+            IQuestionsService.QuestionError.InvalidTrack => apiErrorFactory.BadRequest(nameof(error)),
+            IQuestionsService.QuestionError.CannotLoadTrack => apiErrorFactory.BadRequest(nameof(error)),
+            IQuestionsService.QuestionError.InUse => apiErrorFactory.BadRequest(nameof(error)),
+            _ => apiErrorFactory.ServerError(nameof(error))
         };
     }
 }
