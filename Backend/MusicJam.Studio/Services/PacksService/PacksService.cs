@@ -1,4 +1,5 @@
-﻿using MusicJam.Studio.Extensions;
+﻿using System.Globalization;
+using MusicJam.Studio.Extensions;
 using MusicJam.Studio.Models.Packs;
 using MusicJam.Studio.Requests;
 using MusicJam.Studio.Requests.Packs;
@@ -36,12 +37,14 @@ public class PacksService(
         var packs = await packStorage.GetCardPacksByUser(userId, request.Take, request.Skip);
 
         return packs
-            .Select(x => new PackCardResponse()
+            .Select(x => new PackCardResponse
             {
                 PackId = x.Id,
                 Name = x.Name,
-                CreatedAtUtc = x.CreatedAt.ToString(),
-                UpdatedAtUtc = x.UpdatedAt.ToString()
+                CreatedAtUtc = x.CreatedAt.ToString(CultureInfo.InvariantCulture),
+                UpdatedAtUtc = x.UpdatedAt.ToString(CultureInfo.InvariantCulture),
+                RoundCount = x.RoundCount,
+                TotalQuestionCount = x.TotalQuestionCount
             })
             .ToArray();
     }

@@ -12,4 +12,10 @@ public class Pack : Entity
 
 public sealed record PackShortView(Guid Id, string Name);
 
-public sealed record PackCardView(Guid Id, string Name, DateTime CreatedAt, DateTime UpdatedAt);
+public sealed record PackCardView(
+    Guid Id,
+    string Name,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    int RoundCount,
+    int TotalQuestionCount);
