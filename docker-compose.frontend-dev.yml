@@ -1,0 +1,16 @@
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  musicjam-gateway:
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./Frontend/dist:/app/wwwroot
+
+  musicjam-runtime:
+    environment:
+      Environment__SslEnabled: false
+      Environment__Domain: "localhost"
+      Environment__Port: 5000
