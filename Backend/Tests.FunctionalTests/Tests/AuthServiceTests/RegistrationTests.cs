@@ -38,4 +38,30 @@ public class RegistrationTests(TestApplicationFixture fixture) : AuthServiceTest
         result.IsSuccess.ShouldBeFalse();
         result.GetFaultOrThrow().ShouldBe(IAuthService.AuthError.SameEmailAlreadyExists);
     }
+
+    [Theory]
+    [InlineData("123", false)]
+    [InlineData("qwerty", false)]
+    [InlineData("qwerty123", false)]
+    [InlineData("1234567890", false)]
+    [InlineData("S500ERmbXrgp", true)]
+    [InlineData("3BjfOe-%kHZK", true)]
+    public async Task Register_WhenWeakPassword_ReturnsWeakPassword(string testPassword, bool isSuccess)
+    {
+        var request = new RegisterRequest
+        {
+            Username = TestUserName,
+            Password = testPassword,
+            Email = $"TestUserEmail_{testPassword}"
+        };
+
+        var result = await AuthService.Register(request);
+
+        result.IsSuccess.ShouldBe(isSuccess);
+
+        if (!isSuccess)
+        {
+            result.GetFaultOrThrow().ShouldBe(IAuthService.AuthError.WeakPassword);
+        }
+    }
 }

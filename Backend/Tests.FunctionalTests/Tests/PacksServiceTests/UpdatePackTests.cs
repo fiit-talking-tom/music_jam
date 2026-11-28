@@ -1,4 +1,5 @@
 ﻿using MusicJam.Studio.Requests.Packs;
+using MusicJam.Studio.Services.PacksService;
 using Shouldly;
 using Tests.FunctionalTests.Fixtures;
 
@@ -86,5 +87,28 @@ public sealed class UpdatePackTests(TestApplicationFixture fixture) : PacksServi
 
         getResult.IsSuccess.ShouldBeTrue();
         getResult.GetValueOrThrow().Name.ShouldBe(TestPackName);
+    }
+    
+        
+    [Fact]
+    public async Task Update_WhenEmptyPackName_ReturnsEmptyPackName()
+    {
+        var user = await CreateUserAsync();
+        var pack = await CreatePackAsync(user.Id, TestPackName);
+
+        var request = new UpdatePackRequest
+        {
+            Name = "",
+            Rounds = [BuildCreateRoundRequest()]
+        };
+
+        var result = await PacksService.Update(user.Id, pack.Id, request);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.GetFaultOrThrow().ShouldBe(IPacksService.PackError.EmptyPackName);
+        
+        var getPackResult = await PacksService.GetPack(user.Id, pack.Id);
+        getPackResult.IsSuccess.ShouldBeTrue();
+        getPackResult.GetValueOrThrow().Name.ShouldBe(TestPackName);
     }
 }

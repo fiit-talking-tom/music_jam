@@ -10,7 +10,6 @@ public interface ITracksService
     {
         EmptyFile,
         FileTooLarge,
-        TrackNotFound,
     }
 
     Task<Result<Track, TrackError>> UploadTrack(

@@ -22,7 +22,7 @@ internal class AuthService(
 
         if (!PasswordHelper.Verify(request.Password, user.Password))
         {
-            return IAuthService.AuthError.InvalidCredentials;
+            return IAuthService.AuthError.InvalidPassword;
         }
 
         return tokenService.GenerateToken(user);
@@ -34,6 +34,11 @@ internal class AuthService(
         if (user is not null)
         {
             return IAuthService.AuthError.SameEmailAlreadyExists;
+        }
+
+        if (!PasswordHelper.IsStrongPassword(request.Password))
+        {
+            return IAuthService.AuthError.WeakPassword;
         }
 
         var passwordHash = PasswordHelper.Hash(request.Password);

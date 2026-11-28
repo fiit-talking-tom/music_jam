@@ -8,7 +8,8 @@ public interface IAuthService
     public enum AuthError
     {
         UserNotFound,
-        InvalidCredentials,
+        InvalidPassword,
+        WeakPassword,
         SameEmailAlreadyExists,
     }
 

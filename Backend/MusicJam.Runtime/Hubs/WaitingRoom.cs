@@ -2,9 +2,7 @@
 using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Models;
 using MusicJam.Runtime.Responses;
-using MusicJam.Runtime.Services.WaitingRoomService;
 using Shared.Auth;
-using WaitingRoomError = MusicJam.Runtime.Services.WaitingRoomService.IWaitingRoomService.WaitingRoomError;
 
 namespace MusicJam.Runtime.Hubs;
 
@@ -28,7 +26,7 @@ public sealed partial class GameHub
         var result = await waitingRoomService.Join(binding);
         if (result.TryGetFault(out var error, out var joinResponse))
         {
-            throw ToHubException(error);
+            throw hubErrorFactory.Create(error);
         }
 
         var group = GroupName(gameId);
@@ -50,7 +48,7 @@ public sealed partial class GameHub
         var result = await waitingRoomService.Leave(sessionId, gameId, teamId);
         if (result.TryGetFault(out var error))
         {
-            throw ToHubException(error);
+            throw hubErrorFactory.Create(error);
         }
 
         var group = GroupName(gameId);
@@ -62,19 +60,4 @@ public sealed partial class GameHub
     private Guid GetSessionId() =>
         Context.GetHttpContext()?.GetSessionId()
         ?? throw new HubException("Нет сессии, обновите страницу");
-
-    private static HubException ToHubException(WaitingRoomError error) => error switch
-    {
-        WaitingRoomError.EmptyName => new("Название команды не может быть пустым"),
-        WaitingRoomError.LongName => new(
-            $"Название команды должно быть не длиннее {IWaitingRoomService.MaxTeamNameLength} символов"),
-        WaitingRoomError.AlreadyInRoom => new("Вы уже в комнате"),
-        WaitingRoomError.NameTaken => new("Команда с таким названием уже есть"),
-        WaitingRoomError.NotYourTeam => new("Эта команда вам не принадлежит"),
-        WaitingRoomError.GameNotFound => new("Игра не найдена"),
-        WaitingRoomError.GameAlreadyStarted => new("Игра уже началась"),
-        WaitingRoomError.InvalidRole => new("Неизвестная роль"),
-        WaitingRoomError.NotHost => new("Вы не являетесь хостом этой игры"),
-        _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
-    };
 }

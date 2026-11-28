@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using MusicJam.Runtime.Factories.HubErrorFactory;
 using MusicJam.Runtime.Services.WaitingRoomService;
 
 namespace MusicJam.Runtime.Hubs;
 
-public sealed partial class GameHub(IWaitingRoomService waitingRoomService) : Hub<IGameClient>
+public sealed partial class GameHub(
+    IWaitingRoomService waitingRoomService,
+    IHubErrorFactory<IWaitingRoomService.WaitingRoomError> hubErrorFactory) : Hub<IGameClient>
 {
     public const string Path = "/api/runtime/hub";
 

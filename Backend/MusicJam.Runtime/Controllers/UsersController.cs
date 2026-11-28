@@ -2,12 +2,16 @@
 using MusicJam.Runtime.Extensions;
 using MusicJam.Runtime.Services.UsersService;
 using Shared.Auth;
+using Shared.Errors;
 
 namespace MusicJam.Runtime.Controllers;
 
 [ApiController]
 [Route("/api/runtime/games/{gameId:guid}/users")]
-public class UsersController(IUsersService usersService) : ControllerBase
+public class UsersController(
+    IUsersService usersService,
+    IApiErrorFactory<IUsersService.UserError> apiErrorFactory)
+    : ControllerBase
 {
     [HttpGet("check-role")]
     public async Task<IActionResult> CheckRole(Guid gameId)
@@ -33,8 +37,8 @@ public class UsersController(IUsersService usersService) : ControllerBase
     {
         return error switch
         {
-            IUsersService.UserError.GameNotFound => NotFound(),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IUsersService.UserError.GameNotFound => apiErrorFactory.NotFound(error),
+            _ => apiErrorFactory.ServerError(error),
         };
     }
 }

@@ -4,12 +4,16 @@ using MusicJam.Studio.Constants;
 using MusicJam.Studio.Extensions;
 using MusicJam.Studio.Requests.Auth;
 using MusicJam.Studio.Services.AuthService;
+using Shared.Errors;
 
 namespace MusicJam.Studio.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(
+    IAuthService authService,
+    IApiErrorFactory<IAuthService.AuthError> apiErrorFactory)
+    : ControllerBase
 {
     [HttpPost("login")]
     [AllowAnonymous]
@@ -73,10 +77,11 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         return error switch
         {
-            IAuthService.AuthError.UserNotFound => NotFound(),
-            IAuthService.AuthError.InvalidCredentials => BadRequest(),
-            IAuthService.AuthError.SameEmailAlreadyExists => Conflict(),
-            _ => throw new ArgumentOutOfRangeException(error.ToString()),
+            IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(error),
+            IAuthService.AuthError.InvalidPassword => apiErrorFactory.BadRequest(error),
+            IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(error),
+            IAuthService.AuthError.SameEmailAlreadyExists => apiErrorFactory.Conflict(error),
+            _ => apiErrorFactory.ServerError(error)
         };
     }
 }

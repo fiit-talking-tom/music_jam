@@ -11,7 +11,7 @@ public abstract class AuthServiceTestBase(TestApplicationFixture fixture) : Func
 
     protected const string TestUserName = "John Doe";
     protected const string TestUserEmail = "test@example.com";
-    protected const string TestUserPassword = "password";
+    protected const string TestUserPassword = "d764%%GVH@vq";
 
     protected async Task<User> CreateUserAsync(string email, string password)
     {
