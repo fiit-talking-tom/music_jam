@@ -61,12 +61,14 @@ public class AuthController(IAuthService authService, IApiErrorFactory apiErrorF
 
     private ActionResult ErrorResponse(IAuthService.AuthError error)
     {
+        var message = error.ToString();
+
         return error switch
         {
-            IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(nameof(error)),
-            IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(nameof(error)),
-            IAuthService.AuthError.SameEmailAlreadyExists => apiErrorFactory.Conflict(nameof(error)),
-            _ => apiErrorFactory.ServerError(nameof(error))
+            IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(message),
+            IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(message),
+            IAuthService.AuthError.SameEmailAlreadyExists => apiErrorFactory.Conflict(message),
+            _ => apiErrorFactory.ServerError(message)
         };
     }
 }

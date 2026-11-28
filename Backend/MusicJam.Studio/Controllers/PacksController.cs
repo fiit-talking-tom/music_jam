@@ -124,13 +124,15 @@ public class PacksController(IPacksService packsService, IApiErrorFactory apiErr
 
     private ActionResult ErrorResponse(IPacksService.PackError error)
     {
+        var message = error.ToString();
+
         return error switch
         {
-            IPacksService.PackError.NotFound => apiErrorFactory.NotFound(nameof(error)),
-            IPacksService.PackError.DuplicateCell => apiErrorFactory.BadRequest(nameof(error)),
-            IPacksService.PackError.QuestionNotFound => apiErrorFactory.BadRequest(nameof(error)),
-            IPacksService.PackError.EmptyPackName => apiErrorFactory.BadRequest(nameof(error)),
-            _ => apiErrorFactory.ServerError(nameof(error))
+            IPacksService.PackError.NotFound => apiErrorFactory.NotFound(message),
+            IPacksService.PackError.DuplicateCell => apiErrorFactory.BadRequest(message),
+            IPacksService.PackError.QuestionNotFound => apiErrorFactory.BadRequest(message),
+            IPacksService.PackError.EmptyPackName => apiErrorFactory.BadRequest(message),
+            _ => apiErrorFactory.ServerError(message)
         };
     }
 }

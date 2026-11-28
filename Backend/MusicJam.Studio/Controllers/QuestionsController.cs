@@ -159,14 +159,16 @@ public class QuestionsController(IQuestionsService questionsService, IApiErrorFa
 
     private ActionResult ErrorResponse(IQuestionsService.QuestionError error)
     {
+        var message = error.ToString();
+
         return error switch
         {
-            IQuestionsService.QuestionError.NotFound => apiErrorFactory.NotFound(nameof(error)),
-            IQuestionsService.QuestionError.InvalidTrackType => apiErrorFactory.BadRequest(nameof(error)),
-            IQuestionsService.QuestionError.InvalidTrack => apiErrorFactory.BadRequest(nameof(error)),
-            IQuestionsService.QuestionError.CannotLoadTrack => apiErrorFactory.BadRequest(nameof(error)),
-            IQuestionsService.QuestionError.InUse => apiErrorFactory.BadRequest(nameof(error)),
-            _ => apiErrorFactory.ServerError(nameof(error))
+            IQuestionsService.QuestionError.NotFound => apiErrorFactory.NotFound(message),
+            IQuestionsService.QuestionError.InvalidTrackType => apiErrorFactory.BadRequest(message),
+            IQuestionsService.QuestionError.InvalidTrack => apiErrorFactory.BadRequest(message),
+            IQuestionsService.QuestionError.CannotLoadTrack => apiErrorFactory.BadRequest(message),
+            IQuestionsService.QuestionError.InUse => apiErrorFactory.BadRequest(message),
+            _ => apiErrorFactory.ServerError(message)
         };
     }
 }
