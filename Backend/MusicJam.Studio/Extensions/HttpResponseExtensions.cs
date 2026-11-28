@@ -9,6 +9,11 @@ public static class HttpResponseExtensions
         response.Cookies.Append(AuthConstants.AccessToken, token, GetTokenCookieOptions());
     }
 
+    public static void RemoveAccessTokenCookie(this HttpResponse response)
+    {
+        response.Cookies.Delete(AuthConstants.AccessToken, GetTokenCookieOptions());
+    }
+
     private static CookieOptions GetTokenCookieOptions() => new()
     {
         HttpOnly = true,
