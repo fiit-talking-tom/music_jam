@@ -14,6 +14,10 @@ export const authApi = {
     const response = await http.get('/auth/me')
     return response.data;
   },
+  logout: async () => {
+    const response = await http.post('/auth/logout')
+    return response.data;
+  },
   checkRole: async (id : string) => {
     const response = await http.get<CheckRoleResponse>(`/runtime/games/${id}/users/check-role`)
     return response.data;

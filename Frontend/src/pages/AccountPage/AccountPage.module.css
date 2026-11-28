@@ -1,6 +1,27 @@
-.title {
+.options {
+    height: 2.75rem;
     width: 100%;
+    padding: 0 var(--page-padding);
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 3fr auto 3fr;
+    align-items: center;
+}
+
+.title {
+    grid-column: 2;
     text-align: center;
+    margin: 0;
+}
+
+.logout {
+    align-self: stretch;
+    grid-column: 3;
+    justify-self: end;
+    background-color : red;
+    color: white;
+    font-weight: bold;
+    border-radius: 1rem;
 }
 
 .info {
