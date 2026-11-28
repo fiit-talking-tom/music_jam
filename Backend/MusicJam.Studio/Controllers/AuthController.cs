@@ -63,7 +63,8 @@ public class AuthController(IAuthService authService, IApiErrorFactory apiErrorF
     {
         return error switch
         {
-            IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(nameof(IAuthService.AuthError.UserNotFound)),
+            IAuthService.AuthError.UserNotFound => apiErrorFactory.NotFound(nameof(error)),
+            IAuthService.AuthError.WeakPassword => apiErrorFactory.BadRequest(nameof(error)),
             IAuthService.AuthError.SameEmailAlreadyExists => Conflict(),
             _ => throw new ArgumentOutOfRangeException(error.ToString()),
         };

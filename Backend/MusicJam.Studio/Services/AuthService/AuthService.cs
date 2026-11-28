@@ -31,11 +31,23 @@ internal class AuthService(
             return IAuthService.AuthError.SameEmailAlreadyExists;
         }
 
+        // todo написать тесты для этого случая
+        if (!IsStrongPassword(request.Password))
+        {
+            return IAuthService.AuthError.WeakPassword;
+        }
+
         var passwordHash = PasswordHelper.Hash(request.Password);
 
         user = new User(request.Email, passwordHash, request.Username);
         var saved = await userStorage.SaveUser(user);
 
         return tokenService.GenerateToken(saved);
+    }
+
+    private static bool IsStrongPassword(string password)
+    {
+        // todo реализовать логику по проверке силы пароля: какие символы используются, длина, частые паттерны и пр.
+        return true;
     }
 }
