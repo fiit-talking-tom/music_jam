@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MusicJam.Runtime.Clients.StudioClient;
+using MusicJam.Runtime.Factories.HubErrorFactory;
 using MusicJam.Runtime.Hubs;
 using MusicJam.Runtime.Middlewares;
 using MusicJam.Runtime.Services.GameService;
@@ -80,6 +81,7 @@ public class Startup(IConfiguration configuration)
         services.Decorate<IInvitesService, InvitesServiceLoggerDecorator>();
 
         services.AddScoped(typeof(IApiErrorFactory<>), typeof(ApiErrorFactory<>));
+        services.AddScoped(typeof(IHubErrorFactory<>), typeof(HubErrorFactory<>));
 
         services.AddHttpContextAccessor();
         services.AddTransient<ForwardAccessTokenHandler>();
