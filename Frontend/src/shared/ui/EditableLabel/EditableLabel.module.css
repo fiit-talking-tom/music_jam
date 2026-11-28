@@ -1,0 +1,54 @@
+.root {
+    display: grid;
+    grid-template-columns: minmax(1.75rem, 1fr) auto minmax(1.75rem, 1fr);
+    align-items: center;
+    width: 100%;
+    min-width: max-content;
+    box-sizing: border-box;
+    padding: 0 0.5rem;
+}
+
+.name {
+    grid-column: 2;
+    text-align: center;
+    font-size: 1.2rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.deleteWrap {
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.deleteWrap > * {
+    flex-shrink: 0;
+}
+
+.input {
+    min-height: 4rem;
+    font-size: 1.615rem;
+}
+
+.root:hover .actions,
+.root:focus-within .actions {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .actions { opacity: 1; }
+}
+
+.edit {
+    width: 100%;
+    /*height: 2.5rem;*/
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

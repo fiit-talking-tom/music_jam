@@ -1,20 +1,78 @@
-.questionsField{
-    margin-left: 10px;
-    max-height: 610px;
-    max-width: 250px;
-
+.section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 8px;
+    gap: 1.5rem;
+    max-height: 30.75rem;
 }
 
-.questionsField::-webkit-scrollbar {
-    width: 8px;
+.search {
+    box-sizing: border-box;
+    min-height: 2.9rem;
+    padding: 0.45rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: #232327;
+    border-radius: 2.1rem;
+    color: #f8f8f8;
+    transition: box-shadow 0.2s ease;
 }
-.questionsField::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
+
+.search:focus-within {
+    box-shadow: 0 0 0.48rem #f8f8f8;
+}
+
+.searchInput {
+    flex: 1 1 0;
+    min-width: 0;
+    border: 0;
+    background: none;
+    outline: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.searchInput::placeholder {
+    color: #aaa8b1;
+}
+
+.searchIcon {
+    width: 1.425rem;
+    height: 1.425rem;
+    flex-shrink: 0;
+}
+
+.scroll {
+    max-height: 26.35rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #bab9d6 transparent;
+}
+
+.scroll::-webkit-scrollbar {
+    width: 0.375rem;
+}
+
+.scroll::-webkit-scrollbar-track {
+    background: #bab9d6;
+    border-radius: 1rem;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    background: #232327;
+    border: 0.0625rem solid #bab9d6;
+    border-radius: 1rem;
+}
+
+.scrollLeft {
+    direction: rtl;
+}
+
+.list {
+    direction: ltr;
+    padding-left: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
 }

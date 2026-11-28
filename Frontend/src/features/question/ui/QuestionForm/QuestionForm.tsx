@@ -2,19 +2,22 @@ import { useForm } from "react-hook-form";
 import { getQuestionSchema, type QuestionFormValues } from '../../model/schema.ts';
 import { zodResolver } from "@hookform/resolvers/zod";
 import Input from "@/shared/ui/Input/Input.tsx";
-import { Button } from "@/shared/ui/Button/Button.tsx";
 import styles from "./QuestionForm.module.css";
 import type { QuestionDtoCard } from "@/entities/question";
 import { useCreateQuestion } from "@/features/question";
 import { useUpdateQuestion } from "@/features/question";
 import { useDeleteQuestion } from "@/features/question";
+import type { Track } from "@/features/song/model/types.ts";
+import FileField from "@/widgets/Question/ui/FileField/FileField.tsx";
 
 type QuestionFormProps = {
   question?: QuestionDtoCard;
   onSuccess?: () => void;
+  tracks?: Track[];
+  onRemove?: (id: string) => void;
 }
 
-export const QuestionForm = ( { question, onSuccess } : QuestionFormProps) => {
+export const QuestionForm = ( { question, onSuccess, tracks = [], onRemove } : QuestionFormProps) => {
   const isEdit = !!question;
   const { register, handleSubmit, reset, formState : { errors } } = useForm<QuestionFormValues>({
     resolver: zodResolver(getQuestionSchema(isEdit)),
@@ -47,44 +50,76 @@ export const QuestionForm = ( { question, onSuccess } : QuestionFormProps) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className={styles.form}>
-        <div>
-          <label htmlFor="q-track">Трек вопроса</label>
-          <Input id="q-track" type="file" accept="audio/*" {...register('questionTrack')} />
-          {errors.questionTrack && <span>{errors.questionTrack.message}</span>}
+        <div className={styles.fields}>
+          <FileField
+            id="q-track"
+            label="Трек вопроса 📁"
+            registration={register("questionTrack")}
+            error={errors.questionTrack?.message as string | undefined}
+            tracks={tracks}
+            onRemove={onRemove}
+          />
+          <FileField
+            id="a-track"
+            label="Трек ответа 📁"
+            registration={register("answerTrack")}
+            error={errors.answerTrack?.message as string | undefined}
+            tracks={tracks}
+            onRemove={onRemove}
+          />
+
+          <div>
+            <div className={styles.field}>
+              <Input
+                id="q-requested"
+                placeholder={"Что нужно назвать"}
+                {...register("requested")}
+              />
+            </div>
+            {errors.requested && <span className={styles.error}>{errors.requested.message}</span>}
+          </div>
+
+          <div>
+            <div className={styles.field}>
+              <Input
+                id="q-answer"
+                placeholder={"Правильный ответ"}
+                {...register("correctAnswer")}
+              />
+            </div>
+            {errors.correctAnswer && <span className={styles.error}>{errors.correctAnswer.message}</span>}
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="a-track">Трек ответа</label>
-          <Input id="a-track" type="file" accept="audio/*" {...register('answerTrack')} />
-          {errors.answerTrack && <span>{errors.answerTrack.message}</span>}
-        </div>
-
-        <div>
-          <label htmlFor="q-title">Что назвать нужно</label>
-          <Input id="q-requested" placeholder="Что нужно сказать" {...register('requested')} />
-          {errors.requested && <span>{errors.requested.message}</span>}
-        </div>
-
-        <div>
-          <label htmlFor="q-answer">Правильный ответ</label>
-          <Input id="q-answer" placeholder="Ответ" {...register('correctAnswer')} />
-          {errors.correctAnswer && <span>{errors.correctAnswer.message}</span>}
-        </div>
         <div className={styles.options}>
-          <Button
+          {!isEdit && (
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={() => reset()}
+            >
+              Сбросить
+            </button>
+          )}
+          <button
             id="q-submit"
             disabled={isPending}
-            text={isEdit ? "Сохранить вопрос" : "Создать вопрос"}
-            variant="primary"
             type="submit"
-          />
+            className={`${styles.btn} ${styles.btnPrimary}`}
+          >
+            {isEdit ? "Сохранить вопрос" : "Создать вопрос"}
+          </button>
           {isEdit && (
-            <Button
-              text="🗑️"
-              onClick={() => deleteFn.mutate(question.questionId, {
-                onSuccess: () => onSuccess?.()
-              })}
-            />
+            <button
+              type="button"
+              className={styles.btn}
+              aria-label="Удалить вопрос"
+              onClick={() =>
+                deleteFn.mutate(question.questionId, { onSuccess: () => onSuccess?.() })
+              }
+            >
+              <img src="/Trash.svg" alt="Delete question"/>
+            </button>
           )}
         </div>
       </div>

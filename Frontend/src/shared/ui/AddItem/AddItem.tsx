@@ -1,34 +1,21 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import styles from './AddItem.module.css';
+import { InlineInput } from "@/shared/ui/InlineInput/InlineInput.tsx";
+import clsx from "clsx";
 
 interface AddItemProps {
   label: string;
   inputType?: 'text' | 'number';
   onSubmit: (value: string) => void;
+  className?: string;
 }
 
-export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) => {
+export const AddItem = ({ label, inputType = 'text', onSubmit, className }: AddItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState('');
-
-  const close = () => {
-    setIsEditing(false);
-    setValue('');
-  };
-
-  const submit = () => {
-    const trimmed = value.trim();
-    if (trimmed) onSubmit(trimmed);
-    close();
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') submit();
-    if (e.key === 'Escape') close();
-  };
 
   if (!isEditing) {
     return (
+
       <button
         type="button"
         className={styles.addButton}
@@ -36,22 +23,22 @@ export const AddItem = ({ label, inputType = 'text', onSubmit }: AddItemProps) =
         aria-label={label}
         onClick={() => setIsEditing(true)}
       >
-        +
+        <img
+          src="/Plus.svg"
+          alt="Add Item Icon"
+          className={styles.addIcon}
+        />
       </button>
     );
   }
 
   return (
-    <input
-      autoFocus
-      className={styles.input}
-      type={inputType}
-      value={value}
-      placeholder={label}
-      aria-label={label}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={close}
+    <InlineInput
+      label={label}
+      className={clsx(styles.input, className)}
+      inputType={inputType}
+      onSubmit={(v) => { onSubmit(v); setIsEditing(false); }}
+      onCancel={() => setIsEditing(false)}
     />
   );
 };

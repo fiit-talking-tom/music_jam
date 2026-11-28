@@ -11,10 +11,35 @@
 
 .options {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+}
+
+.packName {
+    display: flex;
+    cursor: pointer;
+    padding: 0 var(--page-padding);
+    margin: 1rem 0 1rem 0;
 }
 
 .title {
-    width: 30%;
-    margin-right: 80px;
+    align-self: stretch;
+    width: 100%;
+    box-sizing: border-box;
+
+    background: transparent;
+    border: 1px solid transparent;
+    outline: none;
+    border-radius: 8px;
+
+    color: #F8F8F8;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    caret-color: #F8F8F8;
 }
+
+.title::placeholder {
+    color: rgba(248, 248, 248, 0.4);
+}
+
+

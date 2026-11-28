@@ -1,0 +1,16 @@
+.input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0;
+    border: 0.0625rem solid #bab9d6;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    text-align: center;
+    outline: none;
+}
+
+.input:focus {
+    border-color: #32c76a;
+}

@@ -1,12 +1,92 @@
-.options {
-    display: flex;
-    justify-content: center;
-    gap: 10px
-}
-
 .form {
+    --border: #bab9d6;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 20px
+    gap: 1.25rem;
+    width: 100%;
 }
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.625rem;
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.1875rem;
+    padding-inline: 1.25rem;
+    border: 1px solid rgba(186, 185, 214, 0.5);
+    font-size: 0.9375rem;
+}
+
+.field label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.field input {
+    flex: 1 1 0;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: white;
+    font: inherit;
+    font-size: 0.8125rem;
+}
+.field input:focus-visible { color: #fff; }
+.field:focus-within { border-color: var(--border); }
+
+.field input[type="file"]::file-selector-button {
+    background: transparent;
+    border: 0;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+.error {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: #ff6b6b;
+}
+
+.options {
+    display: flex;
+    gap: clamp(0.75rem, 2vw, 1.875rem);
+}
+
+.fieldOver {
+    border-color: #32c76a;
+    background: rgba(50, 199, 106, 0.1);
+}
+
+.options {
+    display: flex;
+    gap: clamp(0.75rem, 2vw, 1.875rem);
+}
+
+.btn {
+    flex: 1 1 0;
+    height: 2.375rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    background: transparent;
+    color: #fff;
+    font: 400 0.9375rem "Montserrat", sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+.btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
+.btnPrimary { background: rgba(50, 199, 106, 0.6); }
+.btnPrimary:hover:not(:disabled) { background: rgba(50, 199, 106, 0.75); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }

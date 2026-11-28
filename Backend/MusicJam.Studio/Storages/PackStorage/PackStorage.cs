@@ -6,7 +6,7 @@ using DbPack = MusicJam.Studio.Infrastructure.Entities.Pack;
 using Pack = MusicJam.Studio.Models.Packs.Pack;
 using Round = MusicJam.Studio.Models.Packs.Round;
 
-namespace MusicJam.Studio.Storages;
+namespace MusicJam.Studio.Storages.PackStorage;
 
 public class PackStorage(AppDbContext db, IRoundStorage roundStorage) : IPackStorage
 {
@@ -62,7 +62,13 @@ public class PackStorage(AppDbContext db, IRoundStorage roundStorage) : IPackSto
             query = query.Take(take.Value);
 
         return query
-            .Select(x => new PackCardView(x.Id, x.Title, x.CreatedAtUtc, x.UpdatedAtUtc))
+            .Select(x => new PackCardView(
+                x.Id, 
+                x.Title, 
+                x.CreatedAtUtc, 
+                x.UpdatedAtUtc,
+                x.Rounds.Count,
+                x.Rounds.SelectMany(packRound => packRound.Round.Questions).Count()))
             .ToListAsync();
     }
 

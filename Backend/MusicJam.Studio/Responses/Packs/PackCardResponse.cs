@@ -9,4 +9,8 @@ public class PackCardResponse
     public string CreatedAtUtc { get; set; }
 
     public string UpdatedAtUtc { get; set; }
+
+    public int RoundCount { get; set; }
+
+    public int TotalQuestionCount { get; set; }
 }

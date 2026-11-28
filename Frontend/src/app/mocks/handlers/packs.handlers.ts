@@ -12,6 +12,8 @@ const toCard = (pack: PackDto, createdAtUtc = new Date().toISOString()): PackCar
   name: pack.name,
   createdAtUtc,
   updatedAtUtc: new Date().toISOString(),
+  roundCount: 1,
+  totalQuestionCount: 0
 });
 
 const syncCard = (pack: PackDto) => {

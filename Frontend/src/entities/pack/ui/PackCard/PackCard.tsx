@@ -9,27 +9,56 @@ type PackCardProps = {
   startButton?: ReactNode;
 }
 
+const rules = new Intl.PluralRules("ru-RU");
+
+const plural = (n: number, one: string, few: string, many: string) => {
+  const form = rules.select(n);
+  return form === "one" ? one : form === "few" ? few : many;
+};
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString("ru-RU");
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+
 export const PackCard = ({ pack, onClick, deleteButton, startButton }: PackCardProps) => {
   return (
     <div className={styles.packCard} onClick={onClick}>
-      {deleteButton && (
-        <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.header}>
+        <span className={styles.iconSlot}>
+          <img src="/Edit.svg" alt="Edit"/>
+        </span>
+        <h2 className={styles.name}>{pack.name}</h2>
+        <div className={styles.iconSlot} onClick={(e) => e.stopPropagation()}>
           {deleteButton}
         </div>
-      )}
-      <h2 className={styles.name}>{pack.name}</h2>
+      </div>
+      <div className={styles.stats}>
+        <span>
+          <b className={styles.accent}>{pack.roundCount}</b>{" "}
+          {plural(pack.roundCount, "тур", "тура", "туров")}
+        </span>
+        <span>
+          <b className={styles.accent}>{pack.totalQuestionCount}</b>{" "}
+          {plural(pack.totalQuestionCount, "вопрос", "вопроса", "вопросов")}
+        </span>
+      </div>
       <div className={styles.dates}>
-        <time className={styles.date}>
-          <span>Обновлён:</span>
-          {new Date(pack.updatedAtUtc).toLocaleDateString("ru-RU")}
-        </time>
-        <time className={styles.date}>
-          <span>Создан:</span>
-          {new Date(pack.createdAtUtc).toLocaleDateString("ru-RU")}
-        </time>
+        <div className={styles.dateBlock}>
+          <div className={styles.dateTitle}>Дата создания</div>
+          <time className={styles.dateValue} dateTime={pack.createdAtUtc}>
+            {formatDate(pack.createdAtUtc)}
+          </time>
+        </div>
+        <div className={styles.dateBlock}>
+          <div className={styles.dateTitle}>Последнее изменение</div>
+          <time className={styles.dateValue} dateTime={pack.updatedAtUtc}>
+            <span className={styles.time}>{formatTime(pack.updatedAtUtc)}</span>{" "}
+            {formatDate(pack.updatedAtUtc)}
+          </time>
+        </div>
       </div>
       {startButton && (
-        <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.start} onClick={(e) => e.stopPropagation()}>
           {startButton}
         </div>
       )}
